@@ -36,19 +36,28 @@ export default function ServiceDetailScreen() {
     });
   };
 
-  if (!service) return null;
+  if (!service) {
+    return (
+      <View className='items-center justify-center flex-1'>
+        <Text className='text-xl font-montserrat-semibold text-sky-950'>Service introuvable !</Text>
+        <Pressable onPress={() => router.back()}>
+          <Text className='px-4 py-2 mt-4 text-lg text-white rounded-lg font-montserrat-semibold bg-primary'>Retour</Text>
+        </Pressable>
+      </View>
+    )
+  };
 
   return (
-    <View className='flex-1 bg-slate-50'>
+    <View className='flex-1 px-5 bg-slate-50'>
       {/* Header personnalisé */}
       <Header />
             
-      <View className='flex-1 px-5 pb-5'>
+      <View className='flex-1 pb-5'>
         {/* Card du service */}
         <View className='p-5 mb-4 bg-white rounded-lg shadow-lg'>
-          <Text className='text-2xl font-montserrat-bold text-sky-950'>{service.nom}</Text>
+          <Text className='text-2xl font-montserrat-bold text-sky-950'>{service?.nom}</Text>
           <Text className='text-base font-montserrat text-sky-950'>
-            {service.description}
+            {service?.description}
           </Text>
         </View>
 
@@ -64,7 +73,7 @@ export default function ServiceDetailScreen() {
           <TextInput
             className='font-montserrat'
             placeholder="Rechercher un agent..."
-            style={{ flex: 1, height: 68 }}
+            style={{ flex: 1, height: 58 }}
             value={search}
             onChangeText={setSearch}
           />
@@ -82,31 +91,35 @@ export default function ServiceDetailScreen() {
           keyExtractor={item => item.user_id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handleAgentPress(item.user_id)} className='flex-row items-center p-4 mb-2 bg-white rounded-3xl' >
-              <View className='flex-row items-center justify-center w-24 h-24 mr-4 overflow-hidden rounded-full bg-sky-50'>
+              <View className='flex-row items-center justify-center w-20 h-20 mr-4 overflow-hidden rounded-full bg-sky-50'>
                   {item?.user?.avatar ? <Image source={{ uri: item?.user?.avatar }} className='w-full h-full rounded-full' />:
                   // <User size={44} color="#bae6fd" />
                   <Image source={require('../../../assets/items/baby.jpg')} className='w-full h-full rounded-full' />
                   }
               </View>
 
-              {item.is_badges && (<View className='absolute bottom-0 left-6'>
+              {item.is_badges && (<View className='absolute left-0 bottom-4'>
                 <BadgeCheck size={28} color="white" fill={'#38bdf8'} />
               </View>)}
               
               <View style={{ flex: 1 }}>
-                <Text className='text-lg font-montserrat-bold text-sky-900'>{item.user?.name}</Text>
+                <Text className='text-lg font-montserrat-bold text-sky-900' style={{ lineHeight: 13 }}>{item.user?.name}</Text>
                 <View style={{ flexDirection: 'row', marginVertical: 4 }}>
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} color="orange" fill={i <= item.rating - 1 ? 'orange' : 'transparent'} />
+                    <Star key={i} size={14} color="orange" fill={i <= item.rating - 1 ? 'orange' : 'transparent'} />
                   ))}
                 </View>
-                <Text style={{ color: '#143A52', fontSize: 14 }}>
-                  {/* {item.badges.join(', ')} */} Certicfié, Excellent
+                <Text className='text-base text-gray-500' style={{ lineHeight: 12 }}>
+                  {item.is_badges ? 'Agent formé et certifié' : ''}
                 </Text>
               </View>
             </TouchableOpacity>
           )}
         />
+        
+        {agents.length === 0 && <View className='items-center justify-center flex-1'>
+          <Text className='font-montserrat-medium'>Aucun agent trouvé !</Text>
+        </View>}
       </View>
     </View>
   );

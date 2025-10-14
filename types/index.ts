@@ -4,7 +4,7 @@
 export type UserRole = 'agent' | 'client';
 
 // Types d'agents et de clients
-export type AgentType = 'baysitter' | 'menager';
+export type AgentType = 'babysitter' | 'menager';
 export type ClientType = 'personnel' | 'entreprise';
 
 // Disponibilité et statut des agents
@@ -27,7 +27,7 @@ export interface User {
 export interface Agent {
   id: string;
   user_id: string;
-  user?: User & { role: 'agent' };
+  user?: User;
   type: AgentType;
   experience: number; // en années
   disponibilite: Disponibilite;
@@ -46,7 +46,7 @@ export interface Agent {
 export interface Client {
   id: string;
   user_id: string;
-  user?: User & { role: 'client' };
+  user?: User;
   type: ClientType;
   adresse: string;
   entreprise_nom?: string; // requis si type = 'entreprise'
@@ -76,24 +76,24 @@ export interface Tache {
 }
 
 // Profils enrichis pour l'app
-export interface AgentProfile {
-  user: User & { role: 'agent' };
-  agent: Agent;
-}
+// export interface AgentProfile {
+//   user: User;
+//   agent: Agent;
+// }
 
-export interface ClientProfile {
-  user: User & { role: 'client' };
-  client: Client;
-}
+// export interface ClientProfile {
+//   user: User;
+//   client: Client;
+// }
 
-export type AnyProfile = AgentProfile | ClientProfile;
+export type AnyProfile = Agent | Client;
 
 // Types d'auth
-export interface AuthUser {
-  id: string;
-  name?: string;
-  email?: string;
-}
+// export interface AuthUser {
+//   id: string;
+//   name?: string;
+//   email?: string;
+// }
 
 export interface AuthLoginPayload {
   email: string;
@@ -102,8 +102,8 @@ export interface AuthLoginPayload {
 
 export interface AuthResult {
   token: string;
-  user: AuthUser;
-  profile?: AnyProfile;
+  user: User;
+  profile: AnyProfile;
 }
 
 // Alias pratique pour l'API
@@ -113,25 +113,47 @@ export type AuthResponse = AuthResult;
 export interface Reservation {
   id: string;
   client_id: string; // FK -> User.id (role: client)
+  client?: Client;
   service_id: string; // FK -> Service.id
+  service?: Service;
   agent_id: string; // FK -> User.id (role: agent)
-  date_debut: string; // ISO string
-  date_fin: string; // ISO string
-  frequence: string; // ex: ponctuelle, hebdomadaire, etc. (laisser libre)
+  agent?: Agent;
+  frequence: string; // ex: heure, jour, semaine, mois, année, indefini
+  date_reservation: string; // ISO string 
+  duree: string; // ex: 1 jour, 1 semaine, etc. 
+  urgence?: boolean;
+  transport_inclus?: boolean;
   adresse: string;
   nombre_personnes: number;
-  taches_specifiques?: string[]; // liste libre de tâches demandées
+  taches_specifiques?: string; // liste libre de tâches demandées
   taille_logement?: string; // libre: studio, T2, etc.
-  equipements_fournis?: string[]; // ex: produits, aspirateur, etc.
   conditions_particulieres?: string;
-  transport_inclus?: boolean;
-  urgence?: boolean;
-  mode_paiement?: string; // libre: especes, carte, mobile, ...
-  prix_estime?: number;
-  statut: string; // libre: en_attente, confirmée, en_cours, terminée, annulée, ...
-  commentaire?: string;
+  phone: string; // ex: +221700000000
+  statut: string; // libre: en attente, confirmée, annulée, ...
   created_at: string; // ISO string
   updated_at: string; // ISO string
+  deleted_at: string | null;
+}
+
+// Réservation d'une mission (table: reservations)
+export interface FormReservation {
+  client_id: string; // FK -> User.id (role: client)
+  service_id: string; // FK -> Service.id
+  agent_id: string; // FK -> User.id (role: agent)
+  frequence: string; // ex: heure, jour, semaine, mois, année, indefini
+  date_reservation: string; // ISO string 
+  adresse: string;
+  duree: string; // ex: 1 jour, 1 semaine, etc. 
+  urgence?: boolean;
+  transport_inclus?: boolean;
+  nombre_personnes?: number;
+  taches_specifiques?: string; // liste libre de tâches demandées
+  taille_logement?: string; // libre: studio, T2, etc.
+  conditions_particulieres?: string;
+  phone: string; // libre: en_attente, confirmée, en_cours, terminée, annulée, ...
+  // mode_paiement?: string; // libre: especes, carte, mobile, ...
+  // prix_estime?: number;
+  // commentaire?: string;
 }
 
 // Évaluation (table: evaluations)
@@ -161,6 +183,7 @@ export interface Message {
   reservation_id: string; // FK -> Reservation.id
   sender_id: string; // FK -> User.id (expéditeur)
   receiver_id: string; // FK -> User.id (destinataire)
+  user?: User;
   content: string;
   is_read: boolean;
   created_at: string; // ISO string

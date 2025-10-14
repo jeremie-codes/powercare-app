@@ -1,12 +1,11 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 
-export default function ServiceLayout() {
+export default function MessageLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
       <Stack.Screen name="[id]" />
-      <Stack.Screen name="agent" />
-      <Stack.Screen name="reservation" />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

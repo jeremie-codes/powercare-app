@@ -33,15 +33,17 @@ export default function Menu() {
 
   const handlePress = (route: string) => {
 
-    if (!user && route !== '/home' && route !== '/login' && route !== '/register') {
-      showNotification('Vous devez être connecté pour accéder à cette page', 'warning');
-      return;
-    }
+    // if (!user && route !== '/home' && route !== '/login' && route !== '/register') {
+    //   showNotification('Vous devez être connecté pour accéder à cette page', 'warning');
+    //   return;
+    // }
 
     closeMenu();
     if (route == pathname) return;
     router.push(route);
   };
+
+  const isReservationPage = pathname.includes('reservation');
 
   return (
     <View pointerEvents={open ? 'auto' : 'none'} className="w-full h-full" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
@@ -71,9 +73,9 @@ export default function Menu() {
             <ListTodo size={24} color={pathname === '/tasks' ? '#0ea5e9': '#0369a1'} />
             <Text className={`text-lg font-montserrat-semibold ${pathname === '/tasks' ? 'text-sky-500' : 'text-sky-900'}`}>Tâches</Text>
         </Pressable>
-        <Pressable onPress={() => handlePress('/reservations')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/reservations' ? 'bg-sky-50' : ''}`}>
-            <Calendar size={24} color={pathname === '/reservations' ? '#0ea5e9': '#0369a1'} />
-            <Text className={`text-lg font-montserrat-semibold ${pathname === '/reservations' ? 'text-sky-500' : 'text-sky-900'}`}>Réservations</Text>
+        <Pressable onPress={() => handlePress('/reservation')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${isReservationPage ? 'bg-sky-50' : ''}`}>
+            <Calendar size={24} color={isReservationPage ? '#0ea5e9': '#0369a1'} />
+            <Text className={`text-lg font-montserrat-semibold ${isReservationPage ? 'text-sky-500' : 'text-sky-900'}`}>Réservations</Text>
         </Pressable>
         {user && <Pressable onPress={() => handlePress('/profile')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/profile' ? 'bg-sky-50' : ''}`}>
             <UserIcon size={24} color={pathname === '/profile' ? '#0ea5e9': '#0369a1'} />

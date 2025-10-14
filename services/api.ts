@@ -1,7 +1,8 @@
 import Constants from 'expo-constants';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { listServices as mockListServices, getServiceById as mockGetServiceById, getProfileByServiceId, mockLogin, getAgentByUserId } from './datas';
-import type { AgentType, Agent, Service, User } from '../types';
+import { listServices as mockListServices, getServiceById as mockGetServiceById, getProfileByServiceId, sendMessageMock,
+  getReservationById, mockLogin, getAgentByUserId, getReservationsByClientId, getMessagesByUserId, getConversationMock } from './datas';
+import type { AgentType, Agent, Service, FormReservation, Reservation, AnyProfile, AuthResponse, Message } from '../types';
 
 /**
  * Client API basé sur Axios.
@@ -115,10 +116,6 @@ export const Api = {
     request<TResp>({ path, method: 'DELETE', headers }),
 };
 
-export type AuthResponse = {
-  token: string;
-  user: User;
-};
 
 // Example helper for common auth endpoints (optional usage)
 export const AuthApi = {
@@ -166,5 +163,49 @@ export const ServicesApi = {
       return getAgentByUserId(id);
     }
     return Api.get<Agent>(`/agents/${id}`);
-  }
+  },
+  async reserver ( data: FormReservation): Promise<boolean> {
+    try {
+      const response = await Api.post(`/reservations`, data);      
+      // return response;
+
+      return true;
+    } catch (error: any) {
+      console.log(error.response?.data?.message || 'Erreur lors de la réservation !');
+      return false
+    }
+  },
+  async getReservations(idclient: string): Promise<Reservation[]> {
+    if (isMockMode()) {
+      return getReservationsByClientId(idclient);
+    }
+    return Api.get<Reservation[]>(`/reservations/${idclient}`);
+  },
+  async getReservationById(id: string): Promise<Reservation|null> {
+    if (isMockMode()) {
+      return getReservationById(id);
+    }
+    return Api.get<Reservation>(`/reservations/${id}`);
+  },
+  async getMessagesByUserId(id: string): Promise<Message[]> {
+    if (isMockMode()) {
+      return getMessagesByUserId(id);
+    }
+    return Api.get<Message[]>(`/messages/${id}`);
+  },
+};
+
+export const ChatApi = {
+  async sendMessage(senderId: string, receiverId: string, text: string): Promise<boolean> {
+    if (isMockMode()) {
+      return sendMessageMock(senderId, text);
+    }
+    return Api.post<boolean>(`/messages/${senderId}`, { receiverId, text });
+  },
+  async getMessages(senderId: string, receiverId: string): Promise<Message[]> {
+    if (isMockMode()) {
+      return getConversationMock(senderId);
+    }
+    return Api.get<Message[]>(`/messages/${senderId}/${receiverId}`);
+  },
 };

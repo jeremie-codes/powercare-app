@@ -5,8 +5,6 @@ import type {
   User,
   Agent,
   Client,
-  AgentProfile,
-  ClientProfile,
   AnyProfile,
   AgentType,
   ClientType,
@@ -29,21 +27,23 @@ const uid = (n = 8) => Math.random().toString(36).slice(2, 2 + n);
 // Utilisateurs
 export const users: User[] = [
   {
-    id: 'u_agent_1',
+    id: 'u_agent_pers_1',
     name: 'Awa Diop',
     email: 'awa.agent@powercare.test',
     password: 'password123',
     phone: '+221700000001',
     role: 'agent',
+    avatar: "https://randomuser.me/api/portraits/women/30.jpg",
     is_active: true,
   },
   {
-    id: 'u_agent_2',
+    id: 'u_agent_pers_2',
     name: 'Moussa Ndiaye',
     email: 'moussa.agent@powercare.test',
     password: 'password123',
     phone: '+221700000002',
     role: 'agent',
+    avatar: "https://randomuser.me/api/portraits/women/31.jpg",
     is_active: true,
   },
   {
@@ -53,6 +53,7 @@ export const users: User[] = [
     password: 'password123',
     phone: '+221700000101',
     role: 'client',
+    avatar: "https://randomuser.me/api/portraits/women/32.jpg",
     is_active: true,
   },
   {
@@ -62,6 +63,7 @@ export const users: User[] = [
     password: 'password123',
     phone: '+221700000201',
     role: 'client',
+    avatar: "https://randomuser.me/api/portraits/women/33.jpg",
     is_active: true,
   },
 ];
@@ -129,8 +131,9 @@ export const messages: Message[] = [
   {
     id: 'm_0001',
     reservation_id: 'r_0001',
+    user: users.find((u) => u.id === 'u_agent_pers_2'),
     sender_id: 'u_client_pers_1',
-    receiver_id: 'u_agent_2',
+    receiver_id: 'u_agent_pers_2',
     content: 'Bonjour, pouvez-vous arriver 10 minutes plus tôt ?',
     is_read: false,
     created_at: new Date().toISOString(),
@@ -138,8 +141,9 @@ export const messages: Message[] = [
   {
     id: 'm_0002',
     reservation_id: 'r_0001',
-    sender_id: 'u_agent_2',
-    receiver_id: 'u_client_pers_1',
+    user: users.find((u) => u.id === 'u_client_ent_1'),
+    sender_id: 'u_client_pers_1',
+    receiver_id: 'u_client_ent_1',
     content: 'Bonjour, c’est noté. À tout à l’heure !',
     is_read: true,
     created_at: new Date().toISOString(),
@@ -147,13 +151,55 @@ export const messages: Message[] = [
   {
     id: 'm_0003',
     reservation_id: 'r_0002',
+    user: users.find((u) => u.id === 'u_agent_pers_1'),
     sender_id: 'u_client_ent_1',
-    receiver_id: 'u_agent_1',
+    receiver_id: 'u_agent_pers_1',
     content: 'Merci de confirmer la disponibilité pour demain.',
     is_read: false,
     created_at: new Date().toISOString(),
   },
 ];
+
+
+export const conversations: Message[] = [
+  {
+    id: "1",
+    reservation_id: "res-001",
+    sender_id: "u_client_pers_1", // le client
+    receiver_id: "u_agent_pers_2", // l’agent
+    content: "Bonjour, est-ce que vous êtes disponible pour demain matin ?",
+    is_read: true,
+    created_at: "2025-10-13T08:45:00Z",
+  },
+  {
+    id: "2",
+    reservation_id: "res-001",
+    sender_id: "u_agent_pers_2",
+    receiver_id: "u_client_pers_1",
+    content: "Bonjour ! Oui, je suis disponible à partir de 8h.",
+    is_read: true,
+    created_at: "2025-10-13T08:47:00Z",
+  },
+  {
+    id: "3",
+    reservation_id: "res-001",
+    sender_id: "u_client_pers_1",
+    receiver_id: "u_agent_pers_2",
+    content: "Super, je vous envoie la réservation tout de suite.",
+    is_read: true,
+    created_at: "2025-10-13T08:48:00Z",
+  },
+  {
+    id: "4",
+    reservation_id: "res-001",
+    sender_id: "u_agent_pers_2",
+    receiver_id: "u_client_pers_1",
+    content: "Merci beaucoup 😊 à demain !",
+    is_read: false,
+    created_at: "2025-10-13T08:50:00Z",
+  },
+];
+
 
 function defaultServiceIdForAgentType(type: AgentType): string {
   const found = services.find((s) => s.type_agent === type && s.actif);
@@ -199,63 +245,13 @@ export const taches: Tache[] = [
   },
 ];
 
-// Réservations (mock)
-export const reservations: Reservation[] = [
-  {
-    id: 'r_0001',
-    client_id: 'u_client_pers_1',
-    service_id: 's_menage_1',
-    agent_id: 'u_agent_2',
-    date_debut: new Date().toISOString(),
-    date_fin: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // +2h
-    frequence: 'ponctuelle',
-    adresse: 'Dakar, Liberté 6',
-    nombre_personnes: 3,
-    taches_specifiques: ['Dépoussiérage', 'Cuisine'],
-    taille_logement: 'T3',
-    equipements_fournis: ['Aspirateur', 'Produits'],
-    conditions_particulieres: 'Allergie aux parfums forts',
-    transport_inclus: false,
-    urgence: false,
-    mode_paiement: 'mobile',
-    prix_estime: 15000,
-    statut: 'confirmée',
-    commentaire: 'Arriver avant 10h svp',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 'r_0002',
-    client_id: 'u_client_ent_1',
-    service_id: 's_baby_1',
-    agent_id: 'u_agent_1',
-    date_debut: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // demain
-    date_fin: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(),
-    frequence: 'hebdomadaire',
-    adresse: 'Dakar, Plateau',
-    nombre_personnes: 1,
-    taches_specifiques: ['Jeux éducatifs'],
-    taille_logement: 'Bureau',
-    equipements_fournis: ['Goûter'],
-    conditions_particulieres: '',
-    transport_inclus: true,
-    urgence: false,
-    mode_paiement: 'facture',
-    prix_estime: 20000,
-    statut: 'en_attente',
-    commentaire: '',
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-];
-
 // Évaluations (mock)
 export const evaluations: Evaluation[] = [
   {
     id: 'e_1001',
     reservation_id: 'r_0001',
     client_id: 'u_client_pers_1',
-    agent_id: 'u_agent_2',
+    agent_id: 'agent_2',
     note: 5,
     commentaire: 'Travail impeccable, merci !',
     created_at: new Date().toISOString(),
@@ -267,7 +263,7 @@ export const rapports: Rapport[] = [
   {
     id: 'rp_9001',
     reservation_id: 'r_0001',
-    auteur_id: 'u_agent_2',
+    auteur_id: 'agent_2',
     type: 'qualité',
     description: 'Prestation effectuée conformément au cahier des charges.',
     created_at: new Date().toISOString(),
@@ -285,14 +281,16 @@ export const rapports: Rapport[] = [
 // Clients
 export const clients: Client[] = [
   {
+    id: 'u_client_pers_1',
     user_id: 'u_client_pers_1',
-    user: users.find((u) => u.id === 'u_client_pers_1') as any,
+    user: users.find((u) => u.id === 'u_client_pers_1') as User,
     type: 'personnel',
     adresse: 'Dakar, Liberté 6',
   },
   {
+    id: 'u_client_ent_1',
     user_id: 'u_client_ent_1',
-    user: users.find((u) => u.id === 'u_client_ent_1') as any,
+    user: users.find((u) => u.id === 'u_client_ent_1') as User,
     type: 'entreprise',
     adresse: 'Dakar, Plateau',
     entreprise_nom: 'Kër Yaram SA',
@@ -306,7 +304,7 @@ export const services: Service[] = [
     nom: 'Garde d’enfant',
     image: require('../assets/items/babysitter.jpg'),
     description: 'Prise en charge des enfants à domicile: jeux, repas, accompagnement.',
-    type_agent: 'baysitter',
+    type_agent: 'babysitter',
     prix_base: 8000,
     actif: true,
     taches: [taches[0], taches[1]],
@@ -314,8 +312,8 @@ export const services: Service[] = [
   },
   {
     id: 's_menage_1',
-    nom: 'Ménage à domi..',
-    image: require('../assets/items/cleaner.png'),
+    nom: 'Ménage à domicile',
+    image: require('../assets/items/cleaner.jpg'),
     description: 'Nettoyage des pièces principales (poussière, sols, sanitaires).',
     type_agent: 'menager',
     prix_base: 5000,
@@ -329,9 +327,9 @@ export const services: Service[] = [
 export const agents: Agent[] = [
   {
     id: 'agent_1',
-    user_id: 'u_agent_1',
-    user: users.find((u) => u.id === 'u_agent_1') as any,
-    type: 'baysitter',
+    user_id: 'u_agent_pers_1',
+    user: users.find((u) => u.id === 'u_agent_pers_1') as any,
+    type: 'babysitter',
     experience: 4,
     disponibilite: 'temps partiel',
     tarif_horaire: 5000,
@@ -346,9 +344,9 @@ export const agents: Agent[] = [
   },
   {
     id: 'agent_2',
-    user_id: 'u_agent_3',
-    user: users.find((u) => u.id === 'u_agent_2') as any,
-    type: 'baysitter',
+    user_id: 'u_agent_pers_2',
+    user: users.find((u) => u.id === 'u_agent_pers_2') as any,
+    type: 'babysitter',
     experience: 4,
     disponibilite: 'temps partiel',
     tarif_horaire: 5000,
@@ -363,8 +361,8 @@ export const agents: Agent[] = [
   },
   {
     id: 'agent_3',
-    user_id: 'u_agent_2',
-    user: users.find((u) => u.id === 'u_agent_2') as any,
+    user_id: 'u_agent_pers_1',
+    user: users.find((u) => u.id === 'u_agent_pers_1') as any,
     type: 'menager',
     experience: 7,
     disponibilite: 'temps plein',
@@ -377,6 +375,58 @@ export const agents: Agent[] = [
     is_badges: true,
     rating: 3,
     created_at: ''
+  },
+];
+
+// Réservations (mock)
+export const reservations: Reservation[] = [
+  {
+    id: 'r_0001',
+    client_id: 'u_client_pers_1',
+    client: clients.find((c) => c.id === 'u_client_pers_1') as Client,
+    service_id: 's_menage_1',
+    service: services.find((s) => s.id === 's_menage_1') as Service,
+    agent_id: 'agent_2',
+    agent: agents.find((a) => a.id === 'agent_2') as Agent,
+    date_reservation: new Date().toISOString(),
+    frequence: 'Jour',
+    duree: '2',
+    phone: '+221700000101',
+    adresse: 'Dakar, Liberté 6',
+    nombre_personnes: 3,
+    taches_specifiques: 'Dépoussiérage, Cuisine',
+    taille_logement: 'T3',
+    conditions_particulieres: 'Allergie aux parfums forts',
+    transport_inclus: false,
+    urgence: false,
+    statut: 'confirmée',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    deleted_at: null,
+  },
+  {
+    id: 'r_0002',
+    client_id: 'u_client_pers_1',
+    client: clients.find((u) => u.id === 'u_client_pers_1') as Client,
+    service_id: 's_baby_1',
+    service: services.find((s) => s.id === 's_baby_1') as Service,
+    agent_id: 'agent_1',
+    agent: agents.find((a) => a.id === 'agent_1') as Agent,
+    date_reservation: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // demain
+    frequence: 'mois',
+    duree: '6',
+    phone: '+221700000101',
+    adresse: 'Dakar, Plateau',
+    nombre_personnes: 1,
+    taches_specifiques: 'Jeux éducatifs',
+    taille_logement: 'Bureau',
+    conditions_particulieres: '',
+    transport_inclus: true,
+    urgence: false,
+    statut: 'en attente',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    deleted_at: null,
   },
 ];
 
@@ -395,6 +445,36 @@ export function getProfileByServiceId(id: string): Agent[] {
 
 export function getAgentByUserId(id: string): Agent | undefined {
   return agents.find((a) => a.user_id === id);
+}
+
+export function getReservationsByClientId(id: string): Reservation[] {
+  return reservations.filter((r) => r.client_id === id);
+}
+
+export function getReservationById(id: string): Reservation | null {
+  return reservations.find((r) => r.id === id) || null;
+}
+
+export function getMessagesByUserId(senderId: string): Message[] {
+  return messages.filter((m) => m.sender_id === senderId);
+}
+
+export function getConversationMock(userId: string): Message[] {
+  return conversations;
+}
+
+export function sendMessageMock(senderId: string, text: string): boolean {
+  conversations.push({
+    id: 'm_0001',
+    sender_id: senderId,
+    receiver_id: "u_agent_pers_2", // l’agent
+    reservation_id: "res-001",
+    content: text,
+    is_read: false,
+    created_at: new Date().toISOString(),
+  });
+
+  return true;
 }
 
 // Connexion locale simulée

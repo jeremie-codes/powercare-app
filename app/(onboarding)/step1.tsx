@@ -7,9 +7,9 @@ export default function Step1() {
   const router = useRouter();
   return (
     <ImageBackground source={require('../../assets/step1.png')} resizeMode="cover" className="flex-1">
-      <View className="flex-1 bg-black/10"></View>
+      {/* <View className="flex-1 bg-black/10"></View> */}
 
-      <View className="flex-1 px-6 pt-16 bg-black/10">
+      <View className="flex-1 px-6 pt-16">
         <View className="justify-end flex-1 mb-4">
           <View className="flex-row items-center justify-start gap-0 mb-4">
             <View className="z-10 items-center justify-center w-10 h-10 border rounded-full border-primary bg-primary">

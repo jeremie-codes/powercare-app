@@ -9,8 +9,10 @@ export default function OnboardingLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="home" />
         <Stack.Screen name="services" />
+        <Stack.Screen name="reservation" />
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
+        <Stack.Screen name="+not-found" />
       </Stack>
       <Menu />
     </MenuProvider>

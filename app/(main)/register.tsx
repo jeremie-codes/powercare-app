@@ -1,10 +1,9 @@
   import React from 'react';
-  import { View, Text, ScrollView, Pressable, Image, Platform } from 'react-native';
+  import { View, Text, ScrollView, Pressable, Image, Platform,  } from 'react-native';
   import { router, useRouter } from 'expo-router';
   import { ServicesApi } from '../../services/api';
   import type { Service } from '../../types';
   import { useMenu } from '../../contexts/MenuContext';
-  import { LogIn } from 'lucide-react-native'
 import { TextInput, KeyboardAvoidingView } from 'react-native';
 
 
@@ -30,9 +29,9 @@ import { TextInput, KeyboardAvoidingView } from 'react-native';
     }, []);
 
     return (
-      <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className="flex-1 bg-slate-50">
+      <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className="flex-1 bg-slate-100">
         <View className="flex-1 pt-16 bg-slate-50">
-          <ScrollView className="flex-1 py-12 " showsVerticalScrollIndicator={false}>
+          <ScrollView className="flex-1 pb-12 " showsVerticalScrollIndicator={false}>
           
             <View className="items-center mx-8">
               <Image source={require('../../assets/logo.png')} style={{ width: 90, height: 72 }} />
@@ -47,7 +46,6 @@ import { TextInput, KeyboardAvoidingView } from 'react-native';
                   <TextInput
                     placeholder="Nom"
                     value={name}
-                    autoFocus
                     autoCapitalize="none"
                     placeholderTextColor="#cbd5e1"
                     onChangeText={setName}
@@ -102,12 +100,6 @@ import { TextInput, KeyboardAvoidingView } from 'react-native';
                   />  
                 </View>
 
-                <View className='flex-row justify-end mt-8'>
-                  <Pressable onPress={() => router.push('/auth/forgot-password')}>
-                    <Text className='font-montserrat-medium text-sky-700'>Mot de passe oublie</Text> 
-                  </Pressable>
-                </View>
-
                 <Pressable className='px-4 py-5 mt-8 rounded-lg bg-sky-500'>
                   <Text className='text-center text-white font-montserrat-bold'>CREER MON COMPTE</Text>
                 </Pressable>
@@ -115,13 +107,13 @@ import { TextInput, KeyboardAvoidingView } from 'react-native';
             </View>
 
             <View className="flex-row items-center justify-between gap-2 mx-6 mt-6">
-                <Pressable style={{ width: '50%' }} onPress={() => router.replace("/login")} className={`rounded-xl py-4 px-8 bg-slate-200`} >
-                  <Text className={`font-montserrat-semibold text-center text-sky-900`}>SE CONNECTER</Text>
-                </Pressable>
-                
-                <Pressable style={{ width: '50%' }} onPress={() => router.replace("/register")} className={`rounded-xl py-4 px-8 bg-white shadow`} >
-                  <Text className={`font-montserrat-semibold text-center text-sky-500`}>S'INSCRIRE</Text>
-                </Pressable>
+              <Pressable style={{ width: '50%' }} onPress={() => router.replace("/login")} className={`rounded-xl py-4 px-8 bg-slate-200`} >
+                <Text className={`font-montserrat-semibold text-center text-sky-900`}>SE CONNECTER</Text>
+              </Pressable>
+              
+              <Pressable style={{ width: '50%' }} onPress={() => router.replace("/register")} className={`rounded-xl py-4 px-8 bg-white shadow`} >
+                <Text className={`font-montserrat-semibold text-center text-sky-500`}>S'INSCRIRE</Text>
+              </Pressable>
             </View>
           </ScrollView>
         </View>

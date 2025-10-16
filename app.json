@@ -18,25 +18,41 @@
         {
           "calendarPermission": "Cette application a besoin d'accéder à votre calendrier pour vous permettre de faire une réservation."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "L'application accède à vos photos pour vous permettre de définir votre image de profil.",
+          "cameraPermission": "L'application accède à votre caméra pour vous permettre de prendre la photo de profile."
+        }
       ]
     ],
     "orientation": "portrait",
-    "icon": "./assets/app-icon.png",
+    "icon": "./assets/icon-app.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/app-icon.png",
+      "image": "./assets/icon-app.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true
+     "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.powercare.app",
+      "buildNumber": "3",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Cette application a besoin d'accéder à la caméra pour permettre la capture de votre photo de profile.",
+        "NSPhotoLibraryUsageDescription": "Cette application a besoin d'accéder à votre photothèque pour la sélection de photo de profile.",
+        "NSPhotoLibraryAddUsageDescription": "Cette application a besoin d'ajouter des photos à votre photothèque, par exemple lors de la sauvegarde d'une photo de billet.",
+        "NSMicrophoneUsageDescription": "Cette application peut utiliser le microphone lors de la capture de vidéos ou d'enregistrements audio.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/app-icon.png",
+        "foregroundImage": "./assets/icon-app.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.powercare.app"

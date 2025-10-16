@@ -54,7 +54,7 @@ export default function ServiceDetailScreen() {
             
       <View className='flex-1 pb-5'>
         {/* Card du service */}
-        <View className='p-5 mb-4 bg-white rounded-lg shadow-lg'>
+        <View className='p-5 mb-4 bg-white border rounded-lg shadow border-primary'>
           <Text className='text-2xl font-montserrat-bold text-sky-950'>{service?.nom}</Text>
           <Text className='text-base font-montserrat text-sky-950'>
             {service?.description}

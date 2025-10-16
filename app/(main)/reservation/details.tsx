@@ -1,16 +1,18 @@
 //import liraries
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Pressable, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Pressable, Image, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ServicesApi } from '../../../services/api';
 import { Reservation } from 'types';
 import { ArrowLeft, BadgeCheck, Calendar, Clock, Trash2 } from 'lucide-react-native';
 import { formatDate } from 'utils/formatters';
+import { useNotification } from 'contexts/NotificationContext';
 
 // create a component
 export default function DetailsScreen () {
 const [reservation, setReservation] = useState<Reservation | null>(null);
 const [loading, setLoading] = useState(true);
+const { showNotification } = useNotification();
 
 const { id } = useLocalSearchParams();
 
@@ -23,7 +25,7 @@ useEffect(() => {
       setReservation(data);
       
     } catch (e) {
-      console.error('Erreur lors du chargement des réservations :', e);
+      showNotification('Erreur lors du chargement des réservations', 'error');
     } finally {
       setLoading(false);
     }
@@ -60,6 +62,12 @@ return (
           <Text className="text-xl text-black font-montserrat-bold">Réservation</Text>
         </View>
       </View>
+
+      {loading && (
+        <View className='items-center justify-center flex-1'>
+          <ActivityIndicator size="large" color="#38bdf8" />
+        </View>
+      )}
 
       <View className="flex-1 p-5 mt-5 bg-white shadow-lg rounded-[40px]">
         <ScrollView className='flex-1 pb-5'>

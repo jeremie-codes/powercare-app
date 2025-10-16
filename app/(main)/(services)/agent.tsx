@@ -17,7 +17,6 @@ export default function AgentDetailScreen() {
   const [mode, setMode] = useState<'Apperçu' | 'Tâches' | 'Réservation'>('Apperçu');
   const [serviceParsed, setServiceParsed] = useState<Service>();
   const [task, setTask] = useState<Tache[]>([]);
-  const [pricings, setPricings] = useState<Pricing[]>([]);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [step, setStep] = useState(1);
   
@@ -99,7 +98,6 @@ export default function AgentDetailScreen() {
       const a = await ServicesApi.getAgentById(id as string);
       const s = JSON.parse(service as string)
       setServiceParsed(s);
-      setPricings(s.pricings);
       setTask(s.taches);
       setAgent(a);
     })();
@@ -108,18 +106,12 @@ export default function AgentDetailScreen() {
   if (!agent) return null;
 
   const handleReservation = () => {
-    if (!user) {
-      showNotification('Veuillez vous connecter pour effectuer une réservation'); 
-      return;
-    }
+    // if (!user) {
+    //   showNotification('Veuillez vous connecter pour effectuer une réservation'); 
+    //   return;
+    // }
     
-    router.push({
-      pathname: '/reservation',
-      params: {
-        id: agent.id,
-        service: service,
-      },
-    });
+    setMode('Réservation');
   };
   
   const handleConfirm = (date: any) => {

@@ -57,10 +57,10 @@ export default function ChatScreen() {
       <ScrollView className="flex-1 p-4">
         {messages.map((msg, i) => (
             <View key={i} style={{ width: '70%', paddingTop: 10 }}
-              className={`px-2 py-6 rounded-xl mb-2 ${
+              className={`px-2 py-6 rounded-t-2xl mb-2 ${
                 msg.sender_id === user.id
-                  ? "bg-primary self-end"
-                  : "bg-white self-start"
+                  ? "bg-primary self-end rounded-bl-2xl"
+                  : "bg-white self-start rounded-br-2xl"
               }`}
             >
               <Text
@@ -73,7 +73,7 @@ export default function ChatScreen() {
                 {msg.content}
               </Text>
 
-              <View className='absolute right-0 flex-row items-center justify-end w-full' style={{ bottom: msg.sender_id === user.id ? -10 : 2, right: msg.sender_id === user.id ? 0 : 10  }}>
+              <View className='absolute right-0 flex-row items-center justify-end w-full' style={{ bottom: 2, right: msg.sender_id === user.id ? 25 : 10  }}>
                 <Text
                   className={`font-montserrat text-sm ${
                     msg.sender_id === user.id
@@ -83,11 +83,11 @@ export default function ChatScreen() {
                 >
                   {formatTime(msg.created_at)}
                 </Text>
-                {msg.sender_id === user.id && <View className={`rounded-full`} style={{ padding: 5 }}>
+                {msg.sender_id === user.id && <View className={`rounded-full absolute ${!msg.is_read ? '-top-2': '-top-3'} -right-6`} style={{ padding: 5 }}>
                   {msg.is_read && <Check size={16} color={"#86efac"} />}
                   {msg.is_read && <Check size={16} style={{ top: -12, right: -2 }} color={"#86efac"} />}
                   
-                  {!msg.is_read && <Check size={16} color={'#9ca3af'} />}
+                  {!msg.is_read && <Check size={16} color={'#d1d5db'} />}
                 </View>}
               </View>
             </View>

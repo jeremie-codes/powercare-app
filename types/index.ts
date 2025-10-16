@@ -9,9 +9,17 @@ export type ClientType = 'personnel' | 'entreprise';
 
 // Disponibilité et statut des agents
 export type Disponibilite = 'temps plein' | 'temps partiel' | 'occasionnel';
-export type StatutAgent = 'disponible' | 'occupe';
+export type StatutAgent = 'disponible' | 'occupé';
 
 // Utilisateur de base (table: user)
+export interface UserUpdate {
+  name: string;
+  email: string;
+  phone: string;
+  type: "babysitter" | "menager" | "personnel" | "entreprise";
+  adresse?: string;
+  entreprise_nom?: string;
+}
 export interface User {
   id: string;
   name: string;
@@ -19,6 +27,7 @@ export interface User {
   password: string; // NOTE: seulement pour les données de tests locales
   phone: string;
   role: UserRole;
+  adresse?: string;
   avatar?: string;
   is_active: boolean;
 }
@@ -31,12 +40,11 @@ export interface Agent {
   type: AgentType;
   experience: number; // en années
   disponibilite: Disponibilite;
-  tarif_horaire: number; // en devise locale (ex: XOF/EUR)
-  adresse: string;
   statut: StatutAgent;
   rating: number;
   is_badges: boolean;
-  is_recommended: boolean;
+  recommended_at: string | null;
+  recommended_by?: string;
   service_id: string; // référence à Service.id principal proposé par l'agent
   service?: Service;
   created_at: string;
@@ -48,9 +56,10 @@ export interface Client {
   user_id: string;
   user?: User;
   type: ClientType;
-  adresse: string;
   entreprise_nom?: string; // requis si type = 'entreprise'
 }
+
+export type AnyProfile = Agent | Client;
 
 // Service (table: services)
 export interface Service {
@@ -60,40 +69,30 @@ export interface Service {
   description: string;
   type_agent: AgentType;
   prix_base: number;
-  actif: boolean;
-  created_at?: string;
+  is_actif: boolean;
   taches?: Tache[];
   pricings?: Pricing[];
+  created_at: string;
 }
 
 // Tâche liée à un service (table: taches)
 export interface Tache {
   id: string;
-  service_id: string; // FK -> Service.id
+  service_id: string;
+  service?: Service;
   nom: string;
   description: string;
-  supplement: boolean; // si la tâche entraîne un supplément
 }
 
-// Profils enrichis pour l'app
-// export interface AgentProfile {
-//   user: User;
-//   agent: Agent;
-// }
-
-// export interface ClientProfile {
-//   user: User;
-//   client: Client;
-// }
-
-export type AnyProfile = Agent | Client;
-
-// Types d'auth
-// export interface AuthUser {
-//   id: string;
-//   name?: string;
-//   email?: string;
-// }
+export interface TacheAgent {
+  id: string;
+  client_id: string;
+  agent?: Agent;
+  agent_id: string; 
+  title: string;
+  done: boolean;
+  created_at: string;
+}
 
 export interface AuthLoginPayload {
   email: string;
@@ -158,23 +157,17 @@ export interface FormReservation {
 
 // Évaluation (table: evaluations)
 export interface Evaluation {
-  id: string;
-  reservation_id: string; // FK -> Reservation.id
-  client_id: string; // FK -> User.id
-  agent_id: string; // FK -> User.id
-  note: number; // 1..5 selon règle métier
+  client_id: string;
+  agent_id: string;
+  rating: number; // 1..5 
   commentaire?: string;
-  created_at: string; // ISO string
 }
 
 // Rapport (table: rapports)
 export interface Rapport {
-  id: string;
-  reservation_id: string; // FK -> Reservation.id
-  auteur_id: string; // FK -> User.id (agence/client/agent)
-  type: string; // libre: incident, qualité, suivi, ...
+  user_id: string;
+  type: string; // 'aide' | 'plainte'
   description: string;
-  created_at: string; // ISO string
 }
 
 // Message (table: messages)

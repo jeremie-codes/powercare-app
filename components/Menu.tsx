@@ -2,7 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import { Animated, Dimensions, Easing, Pressable, StyleSheet, View, Text, Image } from 'react-native';
 import { useMenu } from '../contexts/MenuContext';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Home, ListTodo, Calendar, UserIcon } from 'lucide-react-native';
+import { User, Home, ListTodo, Calendar, UserIcon, Users, CircleQuestionMark } from 'lucide-react-native';
 import { router, usePathname } from 'expo-router';
 import { useNotification } from 'contexts/NotificationContext';
 
@@ -11,7 +11,7 @@ const MENU_WIDTH = Math.min(320, Math.round(SCREEN_WIDTH * 0.7));
 
 export default function Menu() {
   const { open, closeMenu } = useMenu();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { showNotification } = useNotification();
   const translateX = useRef(new Animated.Value(MENU_WIDTH)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
@@ -64,26 +64,33 @@ export default function Menu() {
           {!user && <User size={24} color="#cbd5e1" />}
         </Pressable>
 
-        {/* TODO: Remplacer par les entrées de navigation réelles */}
         <Pressable onPress={() => handlePress('/home')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/home' ? 'bg-sky-50' : ''}`}>
-            <Home size={24} color={pathname === '/home' ? '#0ea5e9': '#0369a1'} />
-            <Text className={`text-lg font-montserrat-semibold ${pathname === '/home' ? 'text-sky-500' : 'text-sky-900'}`}>Accueil</Text>
+          <Home size={24} color={pathname === '/home' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === '/home' ? 'text-sky-500' : 'text-sky-900'}`}>Accueil</Text>
+        </Pressable>
+        <Pressable onPress={() => handlePress('/tasks/me')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/tasks/me' ? 'bg-sky-50' : ''}`}>
+          <ListTodo size={24} color={pathname === '/tasks/me' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === `/tasks/me` ? 'text-sky-500' : 'text-sky-900'}`}>Mes Tâches</Text>
         </Pressable>
         <Pressable onPress={() => handlePress('/tasks')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/tasks' ? 'bg-sky-50' : ''}`}>
-            <ListTodo size={24} color={pathname === '/tasks' ? '#0ea5e9': '#0369a1'} />
-            <Text className={`text-lg font-montserrat-semibold ${pathname === '/tasks' ? 'text-sky-500' : 'text-sky-900'}`}>Tâches</Text>
+          <Users size={24} color={pathname === '/tasks' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === '/tasks' ? 'text-sky-500' : 'text-sky-900'}`}>Agents Assignés</Text>
         </Pressable>
         <Pressable onPress={() => handlePress('/reservation')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${isReservationPage ? 'bg-sky-50' : ''}`}>
-            <Calendar size={24} color={isReservationPage ? '#0ea5e9': '#0369a1'} />
-            <Text className={`text-lg font-montserrat-semibold ${isReservationPage ? 'text-sky-500' : 'text-sky-900'}`}>Réservations</Text>
+          <Calendar size={24} color={isReservationPage ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${isReservationPage ? 'text-sky-500' : 'text-sky-900'}`}>Réservations</Text>
+        </Pressable>
+        <Pressable onPress={() => handlePress('/support')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/support' ? 'bg-sky-50' : ''}`}>
+          <CircleQuestionMark size={24} color={pathname === '/support' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === '/support' ? 'text-sky-500' : 'text-sky-900'}`}>Aide & Plainte</Text>
         </Pressable>
         {user && <Pressable onPress={() => handlePress('/profile')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/profile' ? 'bg-sky-50' : ''}`}>
-            <UserIcon size={24} color={pathname === '/profile' ? '#0ea5e9': '#0369a1'} />
-            <Text className={`text-lg font-montserrat-semibold ${pathname === '/profile' ? 'text-sky-500' : 'text-sky-900'}`}>Mon Profil</Text>
+          <UserIcon size={24} color={pathname === '/profile' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === '/profile' ? 'text-sky-500' : 'text-sky-900'}`}>Mon Profil</Text>
         </Pressable>}
         {!user && <Pressable onPress={() => handlePress('/login')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/login' || pathname === '/register' ? 'bg-sky-50' : ''}`}>
-            <UserIcon size={24} color={pathname === '/login' || pathname === '/register' ? '#0ea5e9': '#0369a1'} />
-            <Text className={`text-lg font-montserrat-semibold ${pathname === '/login' || pathname === '/register' ? 'text-sky-500' : 'text-sky-900'}`}>Se connecter</Text>
+          <UserIcon size={24} color={pathname === '/login' || pathname === '/register' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === '/login' || pathname === '/register' ? 'text-sky-500' : 'text-sky-900'}`}>Se connecter</Text>
         </Pressable>}
       </Animated.View>
     </View>

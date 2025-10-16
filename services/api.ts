@@ -1,8 +1,13 @@
 import Constants from 'expo-constants';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { listServices as mockListServices, getServiceById as mockGetServiceById, getProfileByServiceId, sendMessageMock,
-  getReservationById, mockLogin, getAgentByUserId, getReservationsByClientId, getMessagesByUserId, getConversationMock } from './datas';
-import type { AgentType, Agent, Service, FormReservation, Reservation, AnyProfile, AuthResponse, Message } from '../types';
+import { listServices as mockListServices, getServiceById as mockGetServiceById, getProfileByServiceId, sendMessageMock,getMockTaskByAgentId,
+  getReservationById, mockLogin, getAgentByUserId, getReservationsByClientId, getMessagesByUserId, getConversationMock, 
+  addTaskMock,
+  removeTaskMock,
+  getMockTaskById,
+  getAgentRecommendedByMeMock,
+  toggleDoneMock} from './datas';
+import type { AgentType, Agent, Service, FormReservation, Reservation, AnyProfile, AuthResponse, Message, Tache, TacheAgent, User, UserUpdate, Rapport } from '../types';
 
 /**
  * Client API basé sur Axios.
@@ -126,13 +131,33 @@ export const AuthApi = {
     }
     return Api.post<AuthResponse, { email: string; password: string }>(`/auth/login`, { email, password });
   },
-  async me() {
+  async updateAccount(data: UserUpdate) {
     if (isMockMode()) {
-      // En mode mock, on n'a pas de décodage de token -> cette route est optionnelle
-      // On renvoie une erreur claire si utilisée sans implémentation spécifique
-      throw { status: 501, message: 'Non implémenté en mode mock. Utilisez les données du contexte.' };
+      return {
+        message: 'Utilisateur mis à jour',
+        success: true,
+        data: { user: data, token: 'test', profile: {} },
+        status: 200,
+      };
     }
-    return Api.get<AuthResponse['user']>(`/auth/me`);
+    return Api.post(`/account/update`, data, { 'Content-Type': 'application/json' });
+  },
+  async updatePassword(data: { oldPassword: string; newpassword: string }): Promise<boolean> {
+    if (isMockMode()) {
+      return true;
+    }
+    return Api.post<boolean>(`/account/newpassword`, data, { 'Content-Type': 'application/json' });
+  },
+  async updateImage(data: FormData) {
+    if (isMockMode()) {
+      return {
+        path: 'test',
+        success: true,
+        user: data,
+        status: 200,
+      };
+    }
+    return Api.post<AuthResponse>(`/account/update`, data, { 'Content-Type': 'application/json' });
   },
 };
 
@@ -209,3 +234,55 @@ export const ChatApi = {
     return Api.get<Message[]>(`/messages/${senderId}/${receiverId}`);
   },
 };
+
+export const TaskApi = {
+  async addTask(clientId: string, agentId: string, task: string): Promise<boolean> {
+    if (isMockMode()) {
+      return addTaskMock(clientId, agentId, task);
+    }
+    return Api.post<boolean>(`/tashes/agent/${clientId}`, { agentId, task });
+  },
+  async deleteTask(taskId: string): Promise<boolean> {
+    if (isMockMode()) {
+      return removeTaskMock(taskId);
+    }
+    return Api.delete<boolean>(`/tashes/agent/${taskId}`);
+  },
+  async getTaskByAgentId(clientId: string, agentId: string): Promise<TacheAgent[]> {
+    if (isMockMode()) {
+      return getMockTaskById(clientId, agentId);
+    }
+    return Api.get<TacheAgent[]>(`/tashes/agent/${agentId}`);
+  },
+  async toggleDone(id: string): Promise<boolean> {
+    if (isMockMode()) {
+      return toggleDoneMock(id);
+    }
+    return Api.get<boolean>(`/tashes/toggle/${id}`);
+  },
+  async getAgentRecommendedByClient(clientId: string): Promise<Agent[]> {
+    if (isMockMode()) {
+      return getAgentRecommendedByMeMock(clientId);
+    }
+    return Api.get<Agent[]>(`/agents/recommended/${clientId}`);
+  },
+  async ratingAgent(client_id: string, agent_id: string, rating: number, commentaire?: string): Promise<boolean> {
+    if (isMockMode()) {
+      // Simulation d’envoi à l’API
+      await new Promise((res) => setTimeout(res, 1500));
+      return true;
+    }
+    const data = { client_id, rating, commentaire };
+    return Api.post<boolean>(`/rating/${agent_id}`, data, { 'Content-Type': 'application/json' });
+  }
+};
+
+export const AideApi = {
+  async create(data: Rapport): Promise<boolean> {
+    if (isMockMode()) {
+      return true;
+    }
+    return Api.post<boolean>(`/aides`, data, { 'Content-Type': 'application/json' });
+  },
+};
+

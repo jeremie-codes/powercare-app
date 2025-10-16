@@ -16,6 +16,7 @@ import type {
   Rapport,
   Message,
   Pricing,
+  TacheAgent,
 } from '../types';
 
 // Faux token pour les tests locaux
@@ -33,7 +34,7 @@ export const users: User[] = [
     password: 'password123',
     phone: '+221700000001',
     role: 'agent',
-    avatar: "https://randomuser.me/api/portraits/women/30.jpg",
+    // avatar: "https://randomuser.me/api/portraits/women/30.jpg",
     is_active: true,
   },
   {
@@ -43,7 +44,7 @@ export const users: User[] = [
     password: 'password123',
     phone: '+221700000002',
     role: 'agent',
-    avatar: "https://randomuser.me/api/portraits/women/31.jpg",
+    // avatar: "https://randomuser.me/api/portraits/women/31.jpg",
     is_active: true,
   },
   {
@@ -53,7 +54,7 @@ export const users: User[] = [
     password: 'password123',
     phone: '+221700000101',
     role: 'client',
-    avatar: "https://randomuser.me/api/portraits/women/32.jpg",
+    // avatar: "https://randomuser.me/api/portraits/women/32.jpg",
     is_active: true,
   },
   {
@@ -63,7 +64,7 @@ export const users: User[] = [
     password: 'password123',
     phone: '+221700000201',
     role: 'client',
-    avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+    // avatar: "https://randomuser.me/api/portraits/women/33.jpg",
     is_active: true,
   },
 ];
@@ -206,45 +207,6 @@ function defaultServiceIdForAgentType(type: AgentType): string {
   return found ? found.id : services[0]?.id || 's_menage_1';
 }
 
-// Tâches par service (mock)
-export const taches: Tache[] = [
-  {
-    id: 't_baby_1',
-    service_id: 's_baby_1',
-    nom: "Jeux éducatifs",
-    description: "Activités ludiques et pédagogiques adaptées à l'âge.",
-    supplement: false,
-  },
-  {
-    id: 't_baby_2',
-    service_id: 's_baby_1',
-    nom: "Préparation repas enfant",
-    description: "Préparer et donner le repas (ingrédients fournis par les parents).",
-    supplement: true,
-  },
-  {
-    id: 't_menage_1',
-    service_id: 's_menage_1',
-    nom: "Dépoussiérage",
-    description: "Dépoussiérer les surfaces, meubles et appareils.",
-    supplement: false,
-  },
-  {
-    id: 't_menage_2',
-    service_id: 's_menage_1',
-    nom: "Nettoyage sols",
-    description: "Aspiration et lavage des sols.",
-    supplement: false,
-  },
-  {
-    id: 't_menage_3',
-    service_id: 's_menage_2',
-    nom: "Vitres",
-    description: "Nettoyage des vitres et encadrements.",
-    supplement: true,
-  },
-];
-
 // Évaluations (mock)
 export const evaluations: Evaluation[] = [
   {
@@ -297,6 +259,40 @@ export const clients: Client[] = [
   },
 ];
 
+// Tâches par service (mock)
+export const taches: Tache[] = [
+  {
+    id: 't_baby_1',
+    service_id: 's_baby_1',
+    nom: "Jeux éducatifs",
+    description: "Activités ludiques et pédagogiques adaptées à l'âge.",
+  },
+  {
+    id: 't_baby_2',
+    service_id: 's_baby_2',
+    nom: "Préparation repas enfant",
+    description: "Préparer et donner le repas (ingrédients fournis par les parents).",
+  },
+  {
+    id: 't_menage_1',
+    service_id: 's_menage_1',
+    nom: "Dépoussiérage",
+    description: "Dépoussiérer les surfaces, meubles et appareils.",
+  },
+  {
+    id: 't_menage_2',
+    service_id: 's_menage_2',
+    nom: "Nettoyage sols",
+    description: "Aspiration et lavage des sols.",
+  },
+  {
+    id: 't_menage_3',
+    service_id: 's_menage_3',
+    nom: "Vitres",
+    description: "Nettoyage des vitres et encadrements.",
+  },
+];
+
 // Services
 export const services: Service[] = [
   {
@@ -306,9 +302,10 @@ export const services: Service[] = [
     description: 'Prise en charge des enfants à domicile: jeux, repas, accompagnement.',
     type_agent: 'babysitter',
     prix_base: 8000,
-    actif: true,
+    is_actif: true,
     taches: [taches[0], taches[1]],
     pricings: [pricings[0], pricings[1], pricings[2]],
+    created_at: new Date().toISOString(),
   },
   {
     id: 's_menage_1',
@@ -317,9 +314,10 @@ export const services: Service[] = [
     description: 'Nettoyage des pièces principales (poussière, sols, sanitaires).',
     type_agent: 'menager',
     prix_base: 5000,
-    actif: true,
+    is_actif: true,
     taches: [taches[2], taches[3], taches[4]],
     pricings: [pricings[3], pricings[4], pricings[5]],
+    created_at: new Date().toISOString(),
   },
 ];
 
@@ -332,10 +330,9 @@ export const agents: Agent[] = [
     type: 'babysitter',
     experience: 4,
     disponibilite: 'temps partiel',
-    tarif_horaire: 5000,
-    adresse: 'Dakar, Point E',
     statut: 'disponible',
-    is_recommended: true,
+    recommended_at: new Date().toISOString(),
+    recommended_by: 'u_client_pers_1',
     is_badges: true,
     rating: 5,
     service_id: 's_baby_1',
@@ -346,13 +343,12 @@ export const agents: Agent[] = [
     id: 'agent_2',
     user_id: 'u_agent_pers_2',
     user: users.find((u) => u.id === 'u_agent_pers_2') as any,
-    type: 'babysitter',
+    type: 'menager',
     experience: 4,
     disponibilite: 'temps partiel',
-    tarif_horaire: 5000,
-    adresse: 'Dakar, Point E',
     statut: 'disponible',
-    is_recommended: true,
+    recommended_at: new Date().toISOString(),
+    recommended_by: 'u_client_pers_1',
     is_badges: true,
     rating: 4,
     service_id: 's_baby_1',
@@ -366,10 +362,8 @@ export const agents: Agent[] = [
     type: 'menager',
     experience: 7,
     disponibilite: 'temps plein',
-    tarif_horaire: 3500,
-    adresse: 'Dakar, Parcelles Assainies',
-    statut: 'occupe',
-    is_recommended: false,
+    statut: 'occupé',
+    recommended_at: null,
     service_id: 's_menage_1',
     service: services.find((s) => s.id === 's_menage_1') as any,
     is_badges: true,
@@ -430,6 +424,86 @@ export const reservations: Reservation[] = [
   },
 ];
 
+// Tâches par service (mock)
+export const tachesAgent: TacheAgent[] = [
+  {
+    id: 't_baby_1',
+    client_id: 'u_client_pers_1',
+    agent_id: 'agent_1',
+    done: true,
+    agent: agents.find((a) => a.id === 'agent_1') as Agent,
+    title: "Laver l'enfant le matin",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 't_baby_2',
+    client_id: 'u_client_pers_1',
+    agent_id: 'agent_1',
+    done: false,
+    agent: agents.find((a) => a.id === 'agent_1') as Agent,
+    title: "Préparation repas enfant",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 't_menage_1',
+    client_id: 'u_client_pers_1',
+    agent_id: 'agent_2',
+    done: false,
+    agent: agents.find((a) => a.id === 'agent_2') as Agent,
+    title: "Dépoussiérage",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 't_menage_2',
+    client_id: 'u_client_pers_1',
+    agent_id: 'agent_2',
+    done: true,
+    agent: agents.find((a) => a.id === 'agent_2') as Agent,
+    title: "Nettoyage sols",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 't_menage_3',
+    client_id: 'u_client_pers_1',
+    agent_id: 'agent_2',
+    done: false,
+    agent: agents.find((a) => a.id === 'agent_2') as Agent,
+    title: "Vitres",
+    created_at: new Date().toISOString(),
+  },
+];
+
+export function getMockTaskById(clientId: string, agentId: string) {
+  return tachesAgent.filter((t) => t.agent_id === agentId && t.client_id === clientId);
+}
+
+export function getMockTaskByAgentId(agentId: string) {
+  return tachesAgent.filter((t) => t.agent_id === agentId);
+}
+
+export function addTaskMock(clientId: string, agentId: string, task: string) {
+  tachesAgent.push({
+    id: 't_baby_' + Date.now().toString(),
+    client_id: clientId,
+    agent_id: agentId,
+    agent: agents.find((a) => a.id === agentId) as Agent,
+    nom: task,
+    created_at: new Date().toISOString()
+  })
+  return true;
+}
+
+export function toggleDoneMock(id: string) {
+  const index = tachesAgent.findIndex(t => t.id == id)
+  tachesAgent[index].done = true
+  return true;
+}
+
+export function removeTaskMock(taskId: string) {
+  tachesAgent.splice(tachesAgent.findIndex((t) => t.id === taskId), 1);
+  return true;
+}
+
 export function listServices(filter?: { type_agent?: AgentType }) {
   if (!filter?.type_agent) return services;
   return services.filter((s) => s.type_agent === filter.type_agent);
@@ -455,12 +529,17 @@ export function getReservationById(id: string): Reservation | null {
   return reservations.find((r) => r.id === id) || null;
 }
 
+export function getAgentRecommendedByMeMock(clientId: string): Agent[] {
+  return agents.filter((a) => a.recommended_by === clientId);
+}
+
 export function getMessagesByUserId(senderId: string): Message[] {
   return messages.filter((m) => m.sender_id === senderId);
 }
 
 export function getConversationMock(userId: string): Message[] {
   return conversations;
+  // return conversations.filter((m) => m.sender_id === userId || m.receiver_id === userId);
 }
 
 export function sendMessageMock(senderId: string, text: string): boolean {
@@ -529,6 +608,7 @@ export function createLocalUser(params: {
 
   if (params.role === 'agent') {
     const agent: Agent = {
+      id: `a_${uid()}`,
       user_id: id,
       type: (params.extra?.type as AgentType) ?? 'baysitter',
       experience: (params.extra as any)?.experience ?? 1,
@@ -536,20 +616,24 @@ export function createLocalUser(params: {
       tarif_horaire: (params.extra as any)?.tarif_horaire ?? 3000,
       adresse: (params.extra as any)?.adresse ?? 'Dakar',
       statut: (params.extra as any)?.statut ?? 'disponible',
-      is_recommended: (params.extra as any)?.is_recommended ?? false,
+      recommended_at: (params.extra as any)?.recommended_at ?? false,
       service_id:
         (params.extra as any)?.service_id ?? defaultServiceIdForAgentType(((params.extra?.type as AgentType) ?? 'baysitter')),
+      rating: (params.extra as any)?.rating ?? 3,
+      is_badges: (params.extra as any)?.is_badges ?? false,
+      created_at: new Date().toISOString(),
     };
     agents.push(agent);
-    return { user: base as any, agent };
+    return { user: base as any } as AnyProfile;
   }
 
   const client: Client = {
+    id: `c_${uid()}`,
     user_id: id,
     type: (params.extra?.type as ClientType) ?? 'personnel',
     adresse: (params.extra as any)?.adresse ?? 'Dakar',
     entreprise_nom: (params.extra as any)?.entreprise_nom,
   };
   clients.push(client);
-  return { user: base as any, client };
+  return { user: base as any } as AnyProfile;
 }

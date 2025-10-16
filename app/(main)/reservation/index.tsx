@@ -7,6 +7,7 @@ import Header from 'components/Header';
 import { useAuth } from 'contexts/AuthContext';
 import { ActivityIndicator } from 'react-native-paper';
 import moment from 'moment';
+import { useNotification } from 'contexts/NotificationContext';
 
 export default function ReservationScreen() {
   const { user, profile } = useAuth();
@@ -14,7 +15,8 @@ export default function ReservationScreen() {
   const [loading, setLoading] = React.useState(true);
   const [filteredReservation, setFilteredReservation] = React.useState<Reservation[]>([]);
   const [statutSelected, setStatutSelected] = React.useState<'Toutes' | 'En attente' | 'Confirmée' | 'Annulée' | string>('Toutes');
-
+  const { showNotification } = useNotification();
+  
   React.useEffect(() => {
     (async () => {
       try {
@@ -34,7 +36,7 @@ export default function ReservationScreen() {
 
         setReservations(list);
       } catch (e) {
-        console.error('Erreur lors du chargement des réservations :', e);
+        showNotification('Erreur lors du chargement des réservations', 'error');
       } finally {
         setLoading(false);
       }

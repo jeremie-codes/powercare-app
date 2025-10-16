@@ -66,7 +66,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           <Animated.View
             style={[styles.container, { transform: [{ translateY }], backgroundColor: backgroundByType[type] }]}
           >
-            <Text style={styles.text}>{message}</Text>
+            <Text style={styles.text} className='text-montserrat-medium'>{message}</Text>
             <TouchableOpacity accessibilityRole="button" className='p-2' onPress={() => animateOut()}>
               <Text style={styles.close} className='text-montserrat-medium'>×</Text>
             </TouchableOpacity>
@@ -103,11 +103,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    // shadowColor: '#000',
-    // shadowOpacity: 0.15,
-    // shadowRadius: 8,
-    // shadowOffset: { width: 0, height: 4 },
-    // elevation: 4,
   },
   text: {
     color: 'white',

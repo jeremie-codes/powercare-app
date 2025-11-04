@@ -1,13 +1,6 @@
-import Constants from 'expo-constants';
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { listServices as mockListServices, getServiceById as mockGetServiceById, getProfileByServiceId, sendMessageMock,getMockTaskByAgentId,
-  getReservationById, mockLogin, getAgentByUserId, getReservationsByClientId, getMessagesByUserId, getConversationMock, 
-  addTaskMock,
-  removeTaskMock,
-  getMockTaskById,
-  getAgentRecommendedByMeMock,
-  toggleDoneMock} from './datas';
-import type { AgentType, Agent, Service, FormReservation, Reservation, AnyProfile, AuthResponse, Message, Tache, TacheAgent, User, UserUpdate, Rapport } from '../types';
+import { sendMessageMock, getMessagesByUserId, getConversationMock, messages} from './datas';
+import type { Agent, Service, FormReservation, Reservation, AuthResponse, Message, TacheAgent, UserUpdate, Rapport, UserCreate } from '../types';
 
 /**
  * Client API basé sur Axios.
@@ -21,14 +14,11 @@ let authToken: string | null = null;
 export function setAuthToken(token: string | null) {
   authToken = token;
 }
+export const baseUrl = 'https://powercare.siterdc.com/';
 
 function getBaseUrl(): string {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  const extraUrl = (Constants.expoConfig as any)?.extra?.apiUrl;
-  const base = envUrl || extraUrl || '';
+  const base = 'https://powercare.siterdc.com/api';
   if (!base) {
-    // Aucune URL de base configurée. Définissez EXPO_PUBLIC_API_URL ou expo.extra.apiUrl
-    // Exemple app.json -> { "expo": { "extra": { "apiUrl": "https://api.exemple.com" } } }
     console.warn('[API] Aucune URL de base configurée. Définissez EXPO_PUBLIC_API_URL ou expo.extra.apiUrl');
   }
   return base;
@@ -121,26 +111,16 @@ export const Api = {
     request<TResp>({ path, method: 'DELETE', headers }),
 };
 
-
 // Example helper for common auth endpoints (optional usage)
 export const AuthApi = {
-  async login(email: string, password: string) {
-    if (isMockMode()) {
-      // Utilise les données locales
-      return mockLogin(email, password);
-    }
-    return Api.post<AuthResponse, { email: string; password: string }>(`/auth/login`, { email, password });
+  async login(email: string, password: string): Promise<{ success: boolean; message: string; data: AuthResponse}> {
+    return Api.post<{ success: boolean; message: string; data: AuthResponse}>(`/auth/login`, { email, password });
   },
-  async updateAccount(data: UserUpdate) {
-    if (isMockMode()) {
-      return {
-        message: 'Utilisateur mis à jour',
-        success: true,
-        data: { user: data, token: 'test', profile: {} },
-        status: 200,
-      };
-    }
-    return Api.post(`/account/update`, data, { 'Content-Type': 'application/json' });
+  async register(data: UserCreate): Promise<{ success: boolean; message: string; data: AuthResponse}> {
+    return Api.post<{ success: boolean; message: string; data: AuthResponse}>(`/auth/register`, data, { 'Content-Type': 'application/json' });
+  },
+  async updateAccount(data: UserUpdate): Promise<{ success: boolean; message: string; data: AuthResponse}> {
+    return Api.post<{ success: boolean; message: string; data: AuthResponse}>(`/account/update`, data, { 'Content-Type': 'application/json' });
   },
   async updatePassword(data: { oldPassword: string; newpassword: string }): Promise<boolean> {
     if (isMockMode()) {
@@ -148,141 +128,87 @@ export const AuthApi = {
     }
     return Api.post<boolean>(`/account/newpassword`, data, { 'Content-Type': 'application/json' });
   },
-  async updateImage(data: FormData) {
-    if (isMockMode()) {
-      return {
-        path: 'test',
-        success: true,
-        user: data,
-        status: 200,
-      };
-    }
-    return Api.post<AuthResponse>(`/account/update`, data, { 'Content-Type': 'application/json' });
+  async updateImage(data: FormData): Promise<{ success: boolean; message: string; data: AuthResponse}> {
+    return Api.post<{ success: boolean; message: string; data: AuthResponse}>(`/account/update`, data, { 'Content-Type': 'multipart/form-data' });
   },
+  async deleteAccount(): Promise<{ success: boolean; message: string;}> {
+    return Api.delete<{ success: boolean; message: string;}>(`/account/delete`, { 'Content-Type': 'application/json' });
+  },
+  async logout(): Promise<{ success: boolean; message: string;}> {
+    return Api.post<{ success: boolean; message: string;}>(`/auth/logout`);
+  }
 };
 
 // Services API (liste et détail). En mode mock, on lit depuis services/datas
 export const ServicesApi = {
-  async list(type_agent?: AgentType): Promise<Service[]> {
-    if (isMockMode()) {
-      return mockListServices({ type_agent });
-    }
-    return Api.get<Service[]>(`/services`, type_agent ? { type_agent } : undefined);
+  async list(): Promise<Service[]> {
+    return Api.get<Service[]>(`/services`);
   },
   async detail(id: string): Promise<Service> {
-    if (isMockMode()) {
-      const s = mockGetServiceById(id);
-      if (!s) throw { status: 404, message: 'Service introuvable.' };
-      return s;
-    }
     return Api.get<Service>(`/services/${id}`);
   },
   async getAgents(id: string): Promise<Agent[]> {
-     if (isMockMode()) {
-      return getProfileByServiceId(id);
-    }
-    return Api.get<Agent[]>(`/agents/${id}`);
+    return Api.get<Agent[]>(`/agents/service/${id}`);
   },
   async getAgentById(id: string): Promise<Agent|undefined> {
-     if (isMockMode()) {
-      return getAgentByUserId(id);
-    }
     return Api.get<Agent>(`/agents/${id}`);
   },
-  async reserver ( data: FormReservation): Promise<boolean> {
-    try {
-      const response = await Api.post(`/reservations`, data);      
-      // return response;
-
-      return true;
-    } catch (error: any) {
-      console.log(error.response?.data?.message || 'Erreur lors de la réservation !');
-      return false
-    }
+  async reserver ( datas: FormReservation): Promise<{ success: boolean; message: string; reservation: Reservation}> {
+    return await Api.post<{ success: boolean; message: string; reservation: Reservation}>(`/reservations`, datas);      
   },
-  async getReservations(idclient: string): Promise<Reservation[]> {
-    if (isMockMode()) {
-      return getReservationsByClientId(idclient);
-    }
-    return Api.get<Reservation[]>(`/reservations/${idclient}`);
+  async getReservations(idclient: string): Promise<{ success: boolean; message: string; reservations: Reservation[]}> {
+    return Api.get<{ success: boolean; message: string; reservations: Reservation[]}>(`/reservations/${idclient}/client`);
   },
   async getReservationById(id: string): Promise<Reservation|null> {
-    if (isMockMode()) {
-      return getReservationById(id);
-    }
     return Api.get<Reservation>(`/reservations/${id}`);
   },
-  async getMessagesByUserId(id: string): Promise<Message[]> {
-    if (isMockMode()) {
-      return getMessagesByUserId(id);
-    }
-    return Api.get<Message[]>(`/messages/${id}`);
+  async cancelReservation(id: string): Promise<boolean> {
+    return Api.post<boolean>(`/reservations/cancel/${id}`);
+  },
+  async removeReservation(id: string): Promise<boolean> {
+    return Api.post<boolean>(`/reservations/delete/${id}`);
   },
 };
 
 export const ChatApi = {
-  async sendMessage(senderId: string, receiverId: string, text: string): Promise<boolean> {
-    if (isMockMode()) {
-      return sendMessageMock(senderId, text);
-    }
-    return Api.post<boolean>(`/messages/${senderId}`, { receiverId, text });
+  async getInoxByUserId(id: string): Promise<{ success: boolean; message: string; inbox: []}> {
+    return Api.get<{ success: boolean; message: string; inbox: []}>(`/inbox/${id}`);
   },
-  async getMessages(senderId: string, receiverId: string): Promise<Message[]> {
-    if (isMockMode()) {
-      return getConversationMock(senderId);
-    }
-    return Api.get<Message[]>(`/messages/${senderId}/${receiverId}`);
+  async getMessages(senderId: string, receiverId: string): Promise<{ success: boolean; message: string; messages: Message[]}> {
+    return Api.get<{ success: boolean; message: string; messages: Message[]}>(`/messages/${senderId}/${receiverId}`);
+  },
+  async sendMessage(senderId: string, receiverId: string, text: string): Promise<{ success: boolean; message: string; messages: Message}> {
+    return Api.post<{ success: boolean; message: string; messages: Message}>(`/messages/${senderId}`, { receiverId, text });
   },
 };
 
 export const TaskApi = {
-  async addTask(clientId: string, agentId: string, task: string): Promise<boolean> {
-    if (isMockMode()) {
-      return addTaskMock(clientId, agentId, task);
-    }
-    return Api.post<boolean>(`/tashes/agent/${clientId}`, { agentId, task });
+  async getTaskByAgentId(agentId: string, userIdClient: string): Promise<{ success: boolean; message: string; datas: TacheAgent[] }> {
+    return Api.get<{ success: boolean; message: string; datas: TacheAgent[] }>(
+      `/taches/${agentId}/agent/${userIdClient}`
+    );
   },
-  async deleteTask(taskId: string): Promise<boolean> {
-    if (isMockMode()) {
-      return removeTaskMock(taskId);
-    }
-    return Api.delete<boolean>(`/tashes/agent/${taskId}`);
+  async addTask(clientId: string, agentId: string, task: string): Promise<{ success: boolean; message: string; task: TacheAgent}> {
+    return Api.post<{ success: boolean; message: string; task: TacheAgent}>(`/taches/agent/${clientId}`, { agentId, task });
   },
-  async getTaskByAgentId(clientId: string, agentId: string): Promise<TacheAgent[]> {
-    if (isMockMode()) {
-      return getMockTaskById(clientId, agentId);
-    }
-    return Api.get<TacheAgent[]>(`/tashes/agent/${agentId}`);
+  async deleteTask(taskId: string): Promise<{ success: boolean, message: string }> {
+    return Api.delete<{ success: boolean, message: string }>(`/taches/agent/${taskId}`);
   },
   async toggleDone(id: string): Promise<boolean> {
-    if (isMockMode()) {
-      return toggleDoneMock(id);
-    }
-    return Api.get<boolean>(`/tashes/toggle/${id}`);
+    return Api.get<boolean>(`/taches/toggle/${id}`);
   },
-  async getAgentRecommendedByClient(clientId: string): Promise<Agent[]> {
-    if (isMockMode()) {
-      return getAgentRecommendedByMeMock(clientId);
-    }
-    return Api.get<Agent[]>(`/agents/recommended/${clientId}`);
+  async getAgentRecommendedByClient(clientId: string): Promise<{ success: boolean; message: string; agents: Agent[]}> {
+    return Api.get<{ success: boolean; message: string; agents: Agent[]}>(`/agents/recommended/${clientId}`);
   },
-  async ratingAgent(client_id: string, agent_id: string, rating: number, commentaire?: string): Promise<boolean> {
-    if (isMockMode()) {
-      // Simulation d’envoi à l’API
-      await new Promise((res) => setTimeout(res, 1500));
-      return true;
-    }
+  async ratingAgent(client_id: string, agent_id: string, rating: number, commentaire?: string): Promise<{ success: boolean, message: string }> {
     const data = { client_id, rating, commentaire };
-    return Api.post<boolean>(`/rating/${agent_id}`, data, { 'Content-Type': 'application/json' });
+    return Api.post<{ success: boolean, message: string }>(`/rating/${agent_id}`, data, { 'Content-Type': 'application/json' });
   }
 };
 
 export const AideApi = {
   async create(data: Rapport): Promise<boolean> {
-    if (isMockMode()) {
-      return true;
-    }
-    return Api.post<boolean>(`/aides`, data, { 'Content-Type': 'application/json' });
+    return Api.post<boolean>(`/rapports`, data, { 'Content-Type': 'application/json' });
   },
 };
 

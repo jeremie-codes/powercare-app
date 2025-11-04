@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, Image, ImageSourcePropType } from 'react-native';
 import type { Service } from '../types';
-import { ArrowRight, ArrowUpRight, Star } from 'lucide-react-native';
+import { ArrowRight, Star } from 'lucide-react-native';
+import { baseUrl } from 'services/api';
 
 type Props = {
   service: Service;
@@ -9,15 +10,18 @@ type Props = {
   accent?: string;
 };
 
+
 export default function ServiceCard({ service, onPress, accent = '#0fade8' }: Props) {
+  
   return (
     <Pressable
       onPress={onPress}
       className="w-full mb-4 mr-4 overflow-hidden bg-white shadow-lg rounded-[30px] border border-black/20"
     >
-      <View className="overflow-hidden bg-primary" style={{ backgroundColor: accent + '80' }}>
+      {/* <View className="overflow-hidden bg-primary" style={{ backgroundColor: accent + '80' }}> */}
+      <View className="overflow-hidden bg-primary" style={{ backgroundColor: '#041f2d' }}>
         <View className="items-center justify-center h-[450]">
-          {<Image source={service?.image as ImageSourcePropType } className='absolute top-0 left-0 w-full h-full' /> }
+          {<Image source={{ uri: `${baseUrl}/${service.image}` }} className='absolute top-0 left-0 w-full h-full' /> }
         </View>
 
         <View className="absolute bottom-0 w-full p-3">

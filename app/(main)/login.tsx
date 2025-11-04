@@ -1,29 +1,35 @@
   import React from 'react';
   import { View, Text, ScrollView, Pressable, Image, Platform, KeyboardAvoidingView } from 'react-native';
   import { router, useRouter } from 'expo-router';
-  import { ServicesApi } from '../../services/api';
-  import type { Service } from '../../types';
-  import { useMenu } from '../../contexts/MenuContext';
-import { TextInput } from 'react-native';
+  import { TextInput } from 'react-native';
+  import { useAuth } from 'contexts/AuthContext';
+  import { ActivityIndicator } from 'react-native-paper';
+  import { useNotification } from 'contexts/NotificationContext';
 
   export default function ProfileScreen() {
     const router = useRouter();
-    const { toggleMenu } = useMenu();
-    const [services, setServices] = React.useState<Service[]>([]);
-    const [page, setPage] = React.useState<'login' | 'register'>('login');
+    const { signIn, loading } = useAuth();
+    const { showNotification } = useNotification();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
 
-    React.useEffect(() => {
-      (async () => {
-        try {
-          const list = await ServicesApi.list();
-          setServices(list);
-        } catch (e) {
-          // noop (mode mock géré côté API)
+    const handleLogin = async () => {
+      if (!email || !password) {
+        showNotification('Renseignez tous les champs', 'error')
+        return
+      }
+        
+      try {
+        const { success, message } = await signIn(email, password);
+        if (success) {
+          router.push('/home');
         }
-      })();
-    }, []);
+        showNotification(message, 'success')
+      } catch (e: any) {
+        console.log(e);
+        showNotification(e.details.message ?? "Une erreur s'est produit!", 'error')
+      }
+    }
 
     return (
       <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className="flex-1 bg-slate-50">
@@ -69,14 +75,15 @@ import { TextInput } from 'react-native';
                   </Pressable>
                 </View>
 
-                <Pressable className='px-4 py-5 mt-8 bg-sky-500 rounded-2xl'>
-                  <Text className='text-center text-white font-montserrat-bold'>SE CONNECTER</Text>
+                <Pressable onPress={handleLogin} className={`px-4 py-5 mt-8 rounded-2xl ${loading? 'bg-sky-300': 'bg-sky-500'}`} disabled={loading}>
+                  {!loading && <Text className='text-center text-white font-montserrat-bold'>SE CONNECTER</Text>}
+                  {loading && <ActivityIndicator size='small' color='white' />}
                 </Pressable>
                 </View>
             </View>
 
             <View className="flex-row items-center justify-between gap-2 py-2 mx-6 mt-16">
-              <Pressable style={{ width: '50%' }} onPress={() => router.replace("/login")} className={`rounded-xl py-4 px-8 bg-white shadow`} >
+              <Pressable  style={{ width: '50%' }} onPress={() => router.replace("/login")} className={`rounded-xl py-4 px-8 bg-white shadow`} >
                 <Text className={`font-montserrat-semibold text-center text-sky-500`}>SE CONNECTER</Text>
               </Pressable>
               

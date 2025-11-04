@@ -6,7 +6,6 @@ export default function ServiceLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="[id]" />
       <Stack.Screen name="agent" />
-      <Stack.Screen name="reservation" />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChatApi } from "../../../services/api";
-import { useAuth } from "../../../contexts/AuthContext";
+import { ChatApi } from "../../services/api";
+import { useAuth } from "../../contexts/AuthContext";
 import { Message } from "types";
 import { ArrowLeft, Check, Send } from "lucide-react-native";
 import { formatTime } from "utils/formatters";

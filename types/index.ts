@@ -5,7 +5,7 @@ export type UserRole = 'agent' | 'client';
 
 // Types d'agents et de clients
 export type AgentType = 'babysitter' | 'menager';
-export type ClientType = 'personnel' | 'entreprise';
+export type ClientType = 'particulier' | 'entreprise';
 
 // Disponibilité et statut des agents
 export type Disponibilite = 'temps plein' | 'temps partiel' | 'occasionnel';
@@ -16,10 +16,20 @@ export interface UserUpdate {
   name: string;
   email: string;
   phone: string;
-  type: "babysitter" | "menager" | "personnel" | "entreprise";
+  type: "babysitter" | "menager" | "particulier" | "entreprise";
   adresse?: string;
   entreprise_nom?: string;
 }
+
+export interface UserCreate {
+  name: string;
+  email: string;
+  phone: string;
+  type: "particulier" | "entreprise";
+  password: string;
+  entreprise_nom?: string;
+}
+
 export interface User {
   id: string;
   name: string;

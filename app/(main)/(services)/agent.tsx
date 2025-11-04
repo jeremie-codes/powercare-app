@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, KeyboardAvoidingView, Pressable, ScrollView, TextInput, Switch, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ServicesApi } from '../../../services/api';
+import { baseUrl, ServicesApi } from '../../../services/api';
 import { User, ArrowLeft, Star, BadgeCheck, Check, X, Calendar, Minus, Plus } from 'lucide-react-native';
-import { Agent, Pricing, Service, Tache } from 'types';
+import { Agent, Service, Tache } from 'types';
 import { useAuth } from 'contexts/AuthContext';
 import { useNotification } from 'contexts/NotificationContext';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { ActivityIndicator } from 'react-native-paper';
 
 export default function AgentDetailScreen() {
   const { id, service } = useLocalSearchParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { showNotification } = useNotification();
   const router = useRouter();
   const [agent, setAgent] = useState<Agent>();
@@ -32,7 +33,10 @@ export default function AgentDetailScreen() {
   const [tailleLogement, setTailleLogement] = useState('');
   const [condition, setCondition] = useState('');
   const [phone, setPhone] = useState('');
+  
   // End FormData
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const showDatePicker = () => setDatePickerVisibility(true);
   const hideDatePicker = () => setDatePickerVisibility(false);
@@ -45,7 +49,7 @@ export default function AgentDetailScreen() {
     setStep(2)
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (serviceParsed?.type_agent == "menager" && tailleLogement == '') return
     if (phone == "" || selectedDate == '' || adresse == '') {
       showNotification('Tout les champs sont récquis', 'error')
@@ -68,8 +72,9 @@ export default function AgentDetailScreen() {
     }
 
     try {
-      const result = ServicesApi.reserver({
-        client_id: user?.id,
+      setIsSubmitting(true)
+      const dataForm ={
+        client_id: profile?.id as string,
         service_id: serviceParsed?.id,
         agent_id: agent?.id,
         frequence: frequence,
@@ -83,39 +88,80 @@ export default function AgentDetailScreen() {
         taille_logement: tailleLogement,
         conditions_particulieres: condition,
         phone: phone
-      })
+      }
+
+      const { success, message, reservation } = await ServicesApi.reserver(dataForm);
+
+      if (!success) {
+        showNotification(message, 'error')
+        return
+      }
       
       showNotification('Votre reservation a bien été effectuée', 'success')
-      router.push('/reservation')
-    } catch (error) {
-      showNotification('Réservation non aboutie !', 'error')
+      router.push({
+        pathname: '/reservation/details/',
+        params: {
+          id: reservation.id,
+        },
+      });
+      
+    } catch (error: any) {
+      showNotification(error.details.message ?? 'Réservation non aboutie !', 'error')
+    } finally {
+      setIsSubmitting(false)
     }
 
   };
     
   useEffect(() => {
     (async () => {
-      const a = await ServicesApi.getAgentById(id as string);
-      const s = JSON.parse(service as string)
-      setServiceParsed(s);
-      setTask(s.taches);
-      setAgent(a);
+      setIsRefreshing(true);
+      try {
+        const a = await ServicesApi.getAgentById(id as string);
+        const s = JSON.parse(service as string)
+        setServiceParsed(s);
+        setTask(s.taches);
+        setAgent(a);
+      } catch (error) {
+        useNotification().showNotification('Erreur de conneixion !', 'error')
+      }
+      finally {
+        setIsRefreshing(false);
+      }
     })();
   }, [id]);
 
-  if (!agent) return null;
+  if (isRefreshing) {
+    return (     
+      <View className='items-center justify-center flex-1'>
+        <ActivityIndicator size="large" color="#075985" />
+      </View>
+    )
+  };
+  
+  if (!agent) {
+    return (
+      <View className='items-center justify-center flex-1'>
+        <Text className='text-lg text-center'>Aucun agent trouvé!</Text>
+        <Pressable onPress={() => router.back()} className='p-4 rounded-lg bg-primary'>
+          <Text className='text-base text-white'>Retour</Text>
+        </Pressable>
+      </View>
+    )
+  };
 
   const handleReservation = () => {
-    // if (!user) {
-    //   showNotification('Veuillez vous connecter pour effectuer une réservation'); 
-    //   return;
-    // }
+    if (!user) {
+      showNotification('Veuillez vous connecter pour effectuer une réservation', 'error'); 
+      return;
+    }
     
     setMode('Réservation');
   };
   
   const handleConfirm = (date: any) => {
-    setSelectedDate(date.toLocaleDateString());
+    const iso = date.toISOString(); // "2025-11-04T12:34:56.000Z"
+    setSelectedDate(iso);
     hideDatePicker();
   };
   
@@ -135,7 +181,7 @@ export default function AgentDetailScreen() {
               </Pressable>
               
               <Image
-                source={agent?.user?.avatar ? { uri: agent.user.avatar } : require('../../../assets/items/baby.jpg')}
+                source={agent?.user?.avatar ? { uri: baseUrl + agent.user.avatar } : require('../../../assets/items/baby.jpg')}
                 className="absolute object-contain w-full h-full -bottom-0"
               />
               
@@ -336,7 +382,6 @@ export default function AgentDetailScreen() {
                 placeholder='Ex: 12, Avenue, kinshasa'
                 value={adresse}
                 onChangeText={setAdresse}
-                keyboardType='numeric'
               />
 
             </View>}
@@ -403,7 +448,6 @@ export default function AgentDetailScreen() {
                 placeholder='Ex: Soins, etc.'
                 value={specifiques}
                 onChangeText={setSpecifiques}
-                keyboardType='numeric'
               />
 
               {/* specifiques */}
@@ -414,7 +458,6 @@ export default function AgentDetailScreen() {
                 placeholder='Ex: Soins, etc.'
                 value={condition}
                 onChangeText={setCondition}
-                keyboardType='numeric'
               />
 
             </View>}
@@ -425,8 +468,8 @@ export default function AgentDetailScreen() {
                 <Text className="text-lg text-white font-montserrat-semibold">Retour</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={handleSubmit} className="items-center px-8 py-4 mb-8 bg-primary rounded-2xl">
-                <Text className="text-lg text-white font-montserrat-semibold">Soumettre</Text>
+              <TouchableOpacity onPress={handleSubmit} disabled={isSubmitting} className="items-center px-8 py-4 mb-8 bg-primary rounded-2xl">
+                {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text className="text-lg text-white font-montserrat-semibold">Soumettre</Text>}
               </TouchableOpacity>
             </View>}
             

@@ -1,13 +1,14 @@
-import React from 'react';
-import { View, Text, Image, TextInput, FlatList, TouchableOpacity, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, RefreshControl, Pressable, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ServicesApi } from '../../../services/api';
 import type { Reservation } from '../../../types';
 import Header from 'components/Header';
 import { useAuth } from 'contexts/AuthContext';
 import { ActivityIndicator } from 'react-native-paper';
-import moment from 'moment';
 import { useNotification } from 'contexts/NotificationContext';
+import moment from 'moment';
+import 'moment/locale/fr';
 
 export default function ReservationScreen() {
   const { user, profile } = useAuth();
@@ -16,32 +17,45 @@ export default function ReservationScreen() {
   const [filteredReservation, setFilteredReservation] = React.useState<Reservation[]>([]);
   const [statutSelected, setStatutSelected] = React.useState<'Toutes' | 'En attente' | 'Confirmée' | 'Annulée' | string>('Toutes');
   const { showNotification } = useNotification();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   React.useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-
-        let list: Reservation[] = [];
-
-        // A effacer lors de l'implémentation de l'API
-        list = await ServicesApi.getReservations('u_client_pers_1');
-        setFilteredReservation(list);
         
-        // ✅ Vérifie le rôle du profil connecté
-        if (profile) {
-          list = await ServicesApi.getReservations(profile?.id);
-          setFilteredReservation(reservations);
+        const { success, message, reservations } = await ServicesApi.getReservations(profile?.id as string);
+
+        if (!success) {
+          showNotification(message, 'error');
         }
 
-        setReservations(list);
-      } catch (e) {
-        showNotification('Erreur lors du chargement des réservations', 'error');
+        setFilteredReservation(reservations);
+        setReservations(reservations);
+      } catch (e: any) {
+        showNotification(e.details.messages ?? 'Erreur lors du chargement des réservations', 'error');
       } finally {
         setLoading(false);
       }
     })();
   }, [user]);
+
+  const onRefresh = React.useCallback(async() => {
+    setIsRefreshing(true);
+    try {      
+      const { success, message, reservations } = await ServicesApi.getReservations(profile?.id as string);
+
+      if (!success) {
+        showNotification(message, 'error');
+      }
+      
+      setFilteredReservation(reservations);
+      setReservations(reservations);
+    } catch (e: any) {
+      showNotification(e.details.messages ?? 'Erreur lors du chargement des réservations', 'error');
+    }
+    setIsRefreshing(false);
+  }, []);
 
   const handleReservationPress = (id : string) => {    
     router.push({
@@ -67,7 +81,13 @@ export default function ReservationScreen() {
 
   return (
     <View className='flex-1 bg-slate-50'>
-      <ScrollView className='flex-1 px-5 pb-5'>
+      <ScrollView className='flex-1 px-5 pb-5'
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing} // Contrôle l'état de l'animation de rafraîchissement
+            onRefresh={onRefresh} // Fonction à appeler lors du tirage vers le bas
+          />
+        }>
             
         {/* Header personnalisé */}
         <Header />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Pressable, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView, Pressable, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
 import { ArrowLeft, CheckCircle, Plus, Star, Trash2, X } from "lucide-react-native";
 import { useAuth } from "../../../contexts/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
@@ -7,15 +7,21 @@ import { TaskApi } from "services/api";
 import { AnyProfile, Client, TacheAgent } from "types";
 import { formatDate, formatTime } from "utils/formatters";
 import { useNotification } from "contexts/NotificationContext";
+import { ActivityIndicator } from "react-native-paper";
 
 export default function TasksScreen() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const { id } = useLocalSearchParams();
   const { showNotification } = useNotification();
   const [visible, setVisible] = React.useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
   
   const showDialog = () => setVisible(true);
   const hideDialog = () => {
@@ -23,48 +29,90 @@ export default function TasksScreen() {
     setRating(0)
   };
 
-  function isClient(profile: AnyProfile | null): profile is Client {
-    return profile !== null && 'experience' !in profile;
-  }
-
   const [tasks, setTasks] = useState<TacheAgent[]>([]);
   const [newTask, setNewTask] = useState("");
 
+  if (!profile || !user) return;
+
   useEffect(() => {
     (async () => {
+      setIsLoading(true)
       try {
-        // if (!isClient(profile)) return; // pour la production
-        const tsks = await TaskApi.getTaskByAgentId('u_client_pers_1', id as string); // pour le test
-                // const tsks = await TaskApi.getTaskByAgentId(profile.id as string, id as string); // pour la production
-        setTasks(tsks);
-      } catch (error) {
-        showNotification('Une erreur s\'est produit !', 'error')
+          const { success, message, datas } = await TaskApi.getTaskByAgentId(id as string, user.id);
+          
+          if (!success) {
+            showNotification(message, 'error');
+            return;
+          }
+
+          setTasks(datas);
+        } catch (error: any) {
+          showNotification(error.details.message ?? 'Une erreur s\'est produit !', 'error')
+        }
+      setIsLoading(false)
+    })()
+  }, []);
+
+  const onRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      const { success, message, datas } = await TaskApi.getTaskByAgentId(id as string, user.id);
+      
+      if (!success) {
+        showNotification(message, 'error');
+        return;
       }
-    })();
-  }, [profile]);
+
+      setTasks(datas);
+    } catch (error: any) {
+      showNotification(error.details.message ?? 'Une erreur s\'est produit !', 'error')
+    }
+    setIsRefreshing(false)
+  }
 
   const addTask = async () => {
     try {
+      setSending(true)
       if (!newTask.trim()) return;
-      await TaskApi.addTask('u_client_pers_1', 'agent_1', newTask);
-      await TaskApi.addTask(profile?.id as string, id as string, newTask);
-      setTasks(prev => [
-        ...prev,
-        { id: Date.now().toString(), client_id: 'u_client_pers_1', agent_id: 'agent_1', title: newTask, created_at: new Date().toISOString(), done: false },
-      ]);
+     
+      const { success, message, task } = await TaskApi.addTask(profile?.id, id as string, newTask);
+    
+      if (!success) {
+        showNotification(message, 'error');
+        return;
+      }
+      
       setNewTask("");
-    } catch (error) {
-      showNotification('Une erreur est survenue', 'error')
+      showNotification('Tâche ajoutée avec succèes !', 'success')
+      
+      const list: TacheAgent[] = [...tasks, task];
+      setTasks(list);
+      
+    } catch (error: any) {
+      showNotification(error.details.message ?? 'Une erreur est survenue', 'error')
     }
+    setSending(false)
   };
 
   const deleteTask = async (id: string) => {
     try {
-      await TaskApi.deleteTask(id);
+      setDeleting(true)
+      setDeletingId(id)
+      const { success, message } = await TaskApi.deleteTask(id);
+    
+      if (!success) {
+        showNotification(message, 'error');
+        return;
+      }
+      
       setTasks(prev => prev.filter(t => t.id !== id));
-    } catch (error) {
-      showNotification('Une erreur est survenue', 'error')
+      showNotification('Tâche supprimée avec succèes !', 'success')
+      
+    } catch (error: any) {
+      showNotification(error.details.message ?? 'Une erreur est survenue', 'error')
     }
+    setDeleting(false)
+    setDeletingId("")
   };
 
   // Dictionnaire des descriptions selon la note
@@ -84,12 +132,17 @@ export default function TasksScreen() {
 
     setLoading(true);
     try {
-      await TaskApi.ratingAgent(profile?.id as string, id as string, rating, comment);
+      const { success, message } = await TaskApi.ratingAgent(profile?.id as string, id as string, rating, comment);
+
+      if (!success) {
+        showNotification(message, 'error');
+        return;
+      }
 
       showNotification("Merci !, Votre évaluation a bien été enregistrée.", 'success');
       router.back();
-    } catch (error) {
-      showNotification("Erreur, Impossible d’envoyer votre évaluation.", 'error');
+    } catch (error: any) {
+      showNotification(error.details.message ?? "Erreur, Impossible d’envoyer votre évaluation.", 'error');
     } finally {
       setLoading(false);
     }
@@ -123,19 +176,31 @@ export default function TasksScreen() {
         />
         <Pressable
           onPress={addTask}
+          disabled={sending}
           className="p-3 ml-3 rounded-full shadow bg-primary"
         >
-          <Plus color="#fff" size={22} />
+          {sending ? <ActivityIndicator size={'small'} color="#fff" /> : <Plus color="#fff" size={22} />}
         </Pressable>
       </View>
 
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+          />
+        }
       >
+
+        {isLoading  && <View className="items-center justify-center flex-1">
+            <ActivityIndicator size={'small'} color="#0B2A36" /> 
+        </View>}
+        
         {/* To Do */}
-        <Text className="text-lg font-montserrat-semibold text-[#0B2A36] mb-3">
+        {!isLoading && <Text className="text-lg font-montserrat-semibold text-[#0B2A36] mb-3">
           À faire ({todos.length})
-        </Text>
+        </Text>}
         {todos.map(t => (
           <View
             key={t.id}
@@ -149,8 +214,8 @@ export default function TasksScreen() {
             </View>
             <View className="flex-row items-center space-x-3">
             
-              <Pressable onPress={() => deleteTask(t.id)}>
-                <Trash2 color="#ef4444" size={22} />
+              <Pressable onPress={() => deleteTask(t.id)} disabled={deleting}>
+                {deleting && deletingId === t.id ? <ActivityIndicator size={'small'} color="#ef4444" /> : <Trash2 color="#ef4444" size={22} />}
               </Pressable>
 
             </View>
@@ -160,9 +225,9 @@ export default function TasksScreen() {
         <View className="w-full h-4 border-b border-gray-200" />
 
         {/* Done */}
-        <Text className="text-lg font-montserrat-semibold text-[#0B2A36] mt-6 mb-3">
+        {!isLoading && <Text className="text-lg font-montserrat-semibold text-[#0B2A36] mt-6 mb-3">
           Terminées ({dones.length})
-        </Text>
+        </Text>}
         {dones.map(t => (
           <View
             key={t.id}

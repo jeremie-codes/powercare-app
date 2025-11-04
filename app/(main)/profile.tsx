@@ -3,37 +3,38 @@ import { View, Text, ScrollView, Pressable, Image, TextInput, KeyboardAvoidingVi
 import { router } from 'expo-router';
 import Header from 'components/Header';
 import { useAuth } from 'contexts/AuthContext';
-import { Camera } from 'lucide-react-native';
+import { Camera, User } from 'lucide-react-native';
 import { useNotification } from 'contexts/NotificationContext';
-import { AuthApi } from 'services/api';
+import { baseUrl } from 'services/api';
 import { UserUpdate } from 'types';
 import * as ImagePicker from 'expo-image-picker';
+import { Dialog } from 'react-native-paper';
 
 export default function ProfileScreen() {
-  const { user, profile } = useAuth()
+  const { user, profile, signOut, accountDelete, updateAccount, updateImage } = useAuth()
   const [nom, setNom] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
   const [phone, setPhone] = useState(user?.phone || '')
   const [adresse, setAdresse] = useState(user?.adresse || '')
-  const [type, setType] = useState(profile?.type || 'personnel')
+  const [type, setType] = useState(profile?.type || 'particulier')
   const [entreprise_nom, setEntrepriseNom] = useState('')
   const [password, setPassword] = useState('')
   const [newpassword, setNewPassword] = useState('')
-  const [picture, setPicture] = useState<string | null>(null);
   const { showNotification } = useNotification();
   const [loading, setLoading] = useState(false)
-  const [view, setView] = useState<'data' | 'password'>('data')
+  const [deleted, setDeleted] = useState(false)
+  const [view, setView] = useState<'connexion' | 'data' | 'password'>('data')
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [visible, setVisible] = useState(false);
 
-  const isClient = profile !== null && 'experience' !in profile;
-  const isAgent = profile !== null && 'experience' in profile;
+  const isClient = user !== null && profile?.type === 'particulier' || user !== null && profile?.type === 'entreprise';
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  if (user) {
+  if (!user) {
     return (
       <View className='items-center justify-center flex-1 bg-slate-50'>
         <Text className='font-montserrat-medium'>Utilisateur non connecté !</Text>
@@ -73,7 +74,7 @@ export default function ProfileScreen() {
         entreprise_nom,
       }
       
-      const result = await AuthApi.updateAccount(data)
+      const result = await updateAccount(data)
       
       
       showNotification('Utilisateur mis à jour avec succès', 'success')
@@ -137,7 +138,7 @@ export default function ProfileScreen() {
         const asset = result.assets[0];
         const formData = new FormData();
 
-        formData.append('picture', {
+        formData.append('avatar', {
           uri: asset.uri,
           name: 'profile.jpg',
           type: 'image/jpeg',
@@ -146,16 +147,15 @@ export default function ProfileScreen() {
         setIsUploadingImage(true);
         
         try {
-          const uploadResult = await AuthApi.updateImage(formData);
+          const uploadResult = await updateImage(formData);
           if (uploadResult) {
             showNotification('Image mise à jour', 'success');
           } else {
-            showNotification('Erreur', 'error');
+            showNotification('Erreur lors de la mise à jour', 'error');
           }
-        } catch (e) {
-          showNotification('Erreur lors de la mise à jour', 'error');
+        } catch (e: any) {
+          showNotification(e.details.message ?? 'Erreur lors de la mise à jour', 'error');
         } finally {
-          // formatImage()
           setIsUploadingImage(false);
         }
       }
@@ -188,7 +188,7 @@ export default function ProfileScreen() {
           setIsUploadingImage(true);
           const formData = new FormData();
 
-        formData.append('picture', {
+        formData.append('avatar', {
           uri: asset.uri,
           name: 'profile.jpg',
           type: 'image/jpeg',
@@ -196,7 +196,7 @@ export default function ProfileScreen() {
 
         setIsUploadingImage(true);
         try {
-          const uploadResult = await AuthApi.updateImage(formData);
+          const uploadResult = await updateImage(formData);
           if (uploadResult) {
             showNotification('Image mise à jour', 'success');
           } else {
@@ -236,44 +236,95 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleLogout = async () => {
+    setLoading(true)
+    try {
+      const { success, message } = await signOut();
+      if (success) {
+        router.push('/home')
+      }
+      showNotification(message, 'success')
+    } catch (error: any) {
+      showNotification(error.details.message ?? 'Une erreur est survenue', 'error')
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+  
+  const handleDelete = async () => {
+    setDeleted(true)
+    try {
+      const { success, message } = await accountDelete();
+      showNotification('Compte supprimé avec succès!', 'success')
+      router.push('/home')
+    } catch (error: any) {
+      showNotification(error.details.message ?? 'Une erreur est survenue', 'error')
+    }
+    finally {
+      setDeleted(false)
+    }
+  }
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'} className="flex-1 bg-slate-50">
       <ScrollView className="flex-1 px-5" contentContainerStyle={{ paddingBottom: 24 }}>
         <Header />
         
         <View className="items-center justify-center p-5 my-4 bg-white shadow rounded-3xl">
-          <View className="relative w-24 h-24 rounded-full">
-            <View className="w-24 h-24 overflow-hidden rounded-full">
-              <Image source={require('../../assets/items/clean.jpg')} className='object-contain w-full h-full' />
+          <View className="relative w-24 h-24 rounded-full bg-slate-50">
+            <View className="flex-row items-center justify-center w-24 h-24 overflow-hidden rounded-full">
+              {user && <Image source={{ uri: baseUrl + user.avatar }} className='object-cover w-full h-full' />}
+              {!user && <User size={24} color="#cbd5e1" />}
             </View>
 
-            <Pressable onPress={handlepicturePress} className='absolute bottom-0 right-0 self-center px-2 py-2 rounded-full bg-primary'>
-              <Camera size={20} color={'#fff'} />
+            <Pressable onPress={handlepicturePress} disabled={isUploadingImage} className='absolute bottom-0 right-0 self-center px-2 py-2 rounded-full bg-primary'>
+              {isUploadingImage ? <ActivityIndicator size={'small'} color={'#fff'} /> : <Camera size={20} color={'#fff'} />}
             </Pressable>
           </View>
           
-          <Text className="text-base font-montserrat-semibold text-[#0B2A36]">{user?.name} Nom d'utilisateur</Text>
-          <Text className="text-sm text-gray-400 font-montserrat-medium">{user?.email}@adressemail</Text>
+          <Text className="text-base font-montserrat-semibold text-[#0B2A36]">{user?.name ?? "Nom d'utilisateur"}</Text>
+          <Text className="text-sm text-gray-400 font-montserrat-medium">{user?.email ?? '@adressemail'}</Text>
         </View>
 
-        <View className="flex-row items-center self-center justify-between py-1 mb-4 bg-gray-200 rounded-xl">
+        <View className="flex-row items-center self-center justify-between p-1 mb-4 bg-gray-200 rounded-xl">
           <Pressable
-            className={`px-6 py-4 rounded-xl  ${view === 'data' ? 'bg-white' : 'border border-gray-200'}`}
+            className={`px-3 mr-1 py-3 rounded-xl  ${view === 'data' ? 'bg-white' : 'bg-gray-100'}`}
             onPress={() => setView('data')}
           >
             <Text className={`text-base font-montserrat-semibold ${view === 'data' ? 'text-primary' : 'text-gray-500'}`}>Mon Profil</Text>
           </Pressable>
           
           <Pressable
-            className={`px-6 py-4 rounded-xl  ${view === 'password' ? 'bg-white' : 'border border-gray-200'}`}
+            className={`px-3 py-3 rounded-xl  ${view === 'password' ? 'bg-white' : 'bg-gray-100'}`}
             onPress={() => setView('password')}
           >
             <Text className={`text-base font-montserrat-semibold ${view === 'password' ? 'text-primary' : 'text-gray-500'}`}>Mot de passe</Text>
           </Pressable>
+          
+          <Pressable
+            className={`px-3 ml-1 py-3 rounded-xl  ${view === 'connexion' ? 'bg-white' : 'bg-gray-100'}`}
+            onPress={() => setView('connexion')}
+          >
+            <Text className={`text-base font-montserrat-semibold ${view === 'connexion' ? 'text-primary' : 'text-gray-500'}`}>Connexion</Text>
+          </Pressable>
         </View>
+
+        {view === 'connexion' && <View className="w-full">
+          <Text className="mb-4 text-base text-gray-700 font-montserrat-semibold">Connexion</Text>
+          <Pressable onPress={handleLogout} className='flex-row items-center justify-center py-4 mt-2 bg-primary rounded-xl' {...loading && { disabled: true }}>
+            { loading && <ActivityIndicator color="#fff" />}
+            <Text className="text-lg text-center text-white font-montserrat-semibold">{loading ? '' : 'Deconnexion'}</Text>
+          </Pressable>
+          
+          <Pressable onPress={() => setVisible(true)} className='flex-row items-center justify-center py-4 mt-3 border-2 border-red-500 rounded-xl' {...loading && { disabled: true }}>
+            { deleted && <ActivityIndicator color="#ef4444" />}
+            <Text className="text-lg text-center text-red-500 font-montserrat-semibold">{deleted ? '' : 'Supprimer le compte'}</Text>
+          </Pressable>
+        </View>}
         
         {view === 'data' && <View className="w-full">
-          <Text className="mb-4 text-base text-gray-700 font-montserrat-semibold">Information personnelle</Text>
+          <Text className="mb-4 text-base text-gray-700 font-montserrat-semibold">Information particulierle</Text>
             <TextInput
               className='px-6 py-6 mb-3 text-base bg-white shadow font-montserrat rounded-xl'
               placeholder='Votre nom complet'
@@ -307,10 +358,10 @@ export default function ProfileScreen() {
 
             {isClient && <View className="flex-row mb-3">
               <Pressable
-                className={`px-6 py-3 rounded-xl bg-white ${type === 'personnel' ? 'border-2 border-primary' : 'border border-gray-200'} mx-2`}
-                onPress={() => setType('personnel')}
+                className={`px-6 py-3 rounded-xl bg-white ${type === 'particulier' ? 'border-2 border-primary' : 'border border-gray-200'} mx-2`}
+                onPress={() => setType('particulier')}
               >
-                <Text className={`font-montserrat-medium text-base ${type === 'personnel' ? 'text-primary' : 'text-[#143A52]'}`}>Personnel</Text>
+                <Text className={`font-montserrat-medium text-base ${type === 'particulier' ? 'text-primary' : 'text-[#143A52]'}`}>Particulier</Text>
               </Pressable>
               
               <Pressable
@@ -354,10 +405,34 @@ export default function ProfileScreen() {
             
             <Pressable onPress={handleUpdatePassword} className='py-4 bg-primary rounded-xl'  {...loading && { disabled: true }}>
               { loading && <ActivityIndicator color="#fff" />}
-              <Text className="text-lg text-center text-white font-montserrat-semibold">{loading ? 'Chargement...' : 'Modifier'}</Text>
+              <Text className="text-lg text-center text-white font-montserrat-semibold">{loading ? '' : 'Modifier'}</Text>
             </Pressable>
         </View>}
       </ScrollView>
+
+      <Dialog
+        visible={visible}
+        onDismiss={() => setVisible(false)}
+      >
+        <Dialog.Content>
+          <View className="flex-row items-center">
+            <View className="flex-1">
+              <Text className="text-lg text-center text-gray-700 font-montserrat-semibold">Etes-vous sûr de vouloir supprimer votre compte ?</Text>
+              <Text className="text-base text-center text-gray-400 font-montserrat">Cette action est irréversible.</Text>
+            </View>
+          </View>
+        </Dialog.Content>
+
+        <Dialog.Actions style={{ justifyContent: 'space-between' }}>
+          <Pressable onPress={() => { setVisible(false); handleDelete(); }} className='px-4 py-3 bg-primary rounded-xl'>
+            <Text className="text-base text-white font-montserrat-semibold">Oui, supprimer</Text>
+          </Pressable>
+          
+          <Pressable onPress={() => setVisible(false)}  className='px-4 py-3 bg-white rounded-xl'>
+            <Text className="text-base text-red-400 font-montserrat-semibold">Annuler</Text>
+          </Pressable>
+        </Dialog.Actions>
+      </Dialog>
     </KeyboardAvoidingView>
   );
 }

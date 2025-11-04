@@ -1,47 +1,82 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Pressable, TextInput } from "react-native";
-import { ArrowLeft, CheckCircle, Circle, Plus, Trash2 } from "lucide-react-native";
+import { View, Text, ScrollView, Pressable, RefreshControl } from "react-native";
+import { ArrowLeft, CheckCircle, Circle } from "lucide-react-native";
 import { useAuth } from "../../../contexts/AuthContext";
 import { router } from "expo-router";
 import { TaskApi } from "services/api";
 import { Agent, AnyProfile, TacheAgent } from "types";
 import { formatDate, formatTime } from "utils/formatters";
 import { useNotification } from "contexts/NotificationContext";
+import { ActivityIndicator } from "react-native-paper";
 
 export default function TasksScreen() {
   const { profile } = useAuth();
   const { showNotification } = useNotification();
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [loadingId, setLoadingId] = useState("");
+  
   function isAgent(profile: AnyProfile | null): profile is Agent {
     return profile !== null && 'experience' in profile;
   }
   
   const [tasks, setTasks] = useState<TacheAgent[]>([]);
-
+  
+  if (!isAgent(profile)) return;
+  
   useEffect(() => {
     (async () => {
+      setIsLoading(true)
       try {
-        // if (!isAgent(profile)) return; // pour la production
-        
-        const tsks = await TaskApi.getTaskByAgentId('u_client_pers_1', 'agent_1'); // pour le test
-        // const tsks = await TaskApi.getTaskByAgentId(profile.recommended_by as string, profile.id); // pour la production
-        setTasks(tsks);
-      } catch (error) {
-        showNotification('Une erreur s\'est produit !', 'error')
-      }
-    })();
-  }, [profile]);
+          const { success, message, datas } = await TaskApi.getTaskByAgentId(profile?.id, profile.recommended_by as string);
+          console.log(profile.recommended_by);
+          
+          if (!success) {
+            showNotification(message, 'error');
+            return;
+          }
 
+          setTasks(datas);
+        } catch (error: any) {
+          showNotification(error.details.message ?? 'Une erreur s\'est produit !', 'error')
+        }
+      setIsLoading(false)
+    })()
+  }, []);
+
+  const onRefresh = async () => {
+     setIsRefreshing(true)
+      try {
+          const { success, message, datas } = await TaskApi.getTaskByAgentId(profile?.id, profile.recommended_by as string);
+          console.log(profile.recommended_by);
+          
+          if (!success) {
+            showNotification(message, 'error');
+            return;
+          }
+
+          setTasks(datas);
+        } catch (error: any) {
+          showNotification(error.details.message ?? 'Une erreur s\'est produit !', 'error')
+        }
+      setIsRefreshing(false)
+  }
 
   const toggleDone = async (id: string) => {
+    setSending(true)
+    setLoadingId(id)
     try {
       await TaskApi.toggleDone(id)
       setTasks(prev =>
         prev.map(t => (t.id === id ? { ...t, done: !t.done } : t))
       );
+      showNotification('Tâche terminée', 'success')
     } catch (error) {
       showNotification('Une erreur s\'est produit !', 'error')
     }
+    setSending(false)
+    setLoadingId("")
   };
 
   const todos = tasks.filter(t => !t.done);
@@ -62,11 +97,21 @@ export default function TasksScreen() {
 
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            onRefresh={onRefresh}
+            refreshing={isRefreshing}
+          />
+        }
       >
+        {isLoading  && <View className="items-center justify-center flex-1">
+          <ActivityIndicator size={'small'} color="#0B2A36" /> 
+      </View>}
+        
         {/* To Do */}
-        <Text className="text-lg font-montserrat-semibold text-[#0B2A36] mb-3">
+        {!isLoading && <Text className="text-lg font-montserrat-semibold text-[#0B2A36] mb-3">
           À faire ({todos.length})
-        </Text>
+        </Text>}
         {todos.map(t => (
           <View
             key={t.id}
@@ -79,8 +124,8 @@ export default function TasksScreen() {
               </Text>
             </View>
             <View className="flex-row items-center space-x-3">
-              <Pressable onPress={() => toggleDone(t.id)}>
-                <Circle color="#d1d5db" size={24} />
+              <Pressable onPress={() => toggleDone(t.id)} disabled={sending}>
+                {sending && loadingId === t.id ? <ActivityIndicator size={'small'} color="#d1d5db" /> : <Circle color="#d1d5db" size={24} />}
               </Pressable>
             </View>
           </View>
@@ -110,7 +155,7 @@ export default function TasksScreen() {
       </ScrollView>
       
       <Pressable
-        onPress={() => showNotification('Fonctionnalité non disponible', 'warning')}
+        onPress={() => router.push('/(main)/support')}
         className="flex-row items-center justify-center px-4 py-4 mx-5 mb-8 shadow bg-primary rounded-2xl"
       >
         <Text className="text-base text-white font-montserrat-semibold">

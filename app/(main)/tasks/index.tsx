@@ -1,13 +1,14 @@
-import React from 'react';
-import { View, Text, Image, TextInput, FlatList, TouchableOpacity, Pressable, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TextInput, RefreshControl, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { TaskApi } from '../../../services/api';
+import { baseUrl, TaskApi } from '../../../services/api';
 import type { Agent } from '../../../types';
-import { Search } from 'lucide-react-native';
+import { Search, User } from 'lucide-react-native';
 import Header from 'components/Header';
 import { useAuth } from 'contexts/AuthContext';
 import { ActivityIndicator } from 'react-native-paper';
 import { formatDate } from 'utils/formatters';
+import { useNotification } from 'contexts/NotificationContext';
 
 export default function recommendedScreen() {
   const { user, profile } = useAuth();
@@ -15,32 +16,58 @@ export default function recommendedScreen() {
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState('');
   const [filteredAgent, setFilteredAgent] = React.useState<Agent[]>([]);
-
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { showNotification } = useNotification()
+  
   React.useEffect(() => {
     (async () => {
       try {
         setLoading(true);
 
-        let list: Agent[] = [];
-
-        // A effacer lors de l'implémentation de l'API
-        list = await TaskApi.getAgentRecommendedByClient('u_client_pers_1');
-        setFilteredAgent(list);
-        
-        // ✅ Vérifie le rôle du profil connecté
-        if (profile) {
-          list = await TaskApi.getAgentRecommendedByClient(profile?.id);
+        if (user) {
+          const { success, message, agents } = await TaskApi.getAgentRecommendedByClient(user?.id);
+          
+          if (!success) {
+            showNotification(message, 'error');
+          }
+          
           setFilteredAgent(agents);
+          setAgent(agents ?? []);
         }
-
-        setAgent(list);
-      } catch (e) {
+        
+      } catch (e: any) {
+        
         console.error('Erreur lors du chargement des agents :', e);
+        showNotification(e.details.message ?? 'Une erreur est survenue', 'error');
+        
       } finally {
         setLoading(false);
       }
     })();
   }, [user]);
+
+  const onRefresh = React.useCallback(async() => {
+    setIsRefreshing(true);
+    try {
+      if (user) {
+          const { success, message, agents } = await TaskApi.getAgentRecommendedByClient(user?.id);
+          
+          if (!success) {
+            showNotification(message, 'error');
+          }
+          
+          setFilteredAgent(agents);
+          setAgent(agents ?? []);
+        }
+        
+      } catch (e: any) {
+        
+        console.error('Erreur lors du chargement des agents :', e);
+        showNotification(e.details.message ?? 'Une erreur est survenue', 'error');
+        
+    } 
+    setIsRefreshing(false);
+  }, []);
 
   const handleagentPress = (id : string) => {    
     router.push({
@@ -65,7 +92,7 @@ export default function recommendedScreen() {
   };
 
   // Si l'utilisateur n'est pas connecté à arranger pour la production !user
-  if (user) {
+  if (!user) {
     return (
       <View className='flex-1 px-5 bg-slate-50'>
         <Header />
@@ -82,7 +109,13 @@ export default function recommendedScreen() {
 
   return (
     <View className='flex-1 bg-slate-50'>
-      <ScrollView className='flex-1 px-5 pb-5'>
+      <ScrollView className='flex-1 px-5 pb-5'
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing} // Contrôle l'état de l'animation de rafraîchissement
+            onRefresh={onRefresh} // Fonction à appeler lors du tirage vers le bas
+          />
+        }>
             
         {/* Header personnalisé */}
         <Header />
@@ -118,10 +151,7 @@ export default function recommendedScreen() {
             <Pressable key={agent.id} onPress={() => handleagentPress(agent.id)} className='relative px-4 py-3 mb-2 bg-white rounded-3xl'>            
               <View className='flex-row items-center'>
                 <View className='flex-row items-center justify-center w-20 h-20 mr-4 overflow-hidden rounded-full bg-sky-50'>
-                  {agent?.user?.avatar ? <Image source={{ uri: agent?.user?.avatar }} className='w-full h-full rounded-full' />:
-                  // <User size={44} color="#bae6fd" />
-                  <Image source={require('../../../assets/items/baby.jpg')} className='w-full h-full rounded-full' />
-                  }
+                  {agent?.user?.avatar ? <Image source={{ uri: baseUrl + agent?.user?.avatar }} className='w-full h-full rounded-full' />: <User size={44} color="#bae6fd" />}
                 </View>
                 
                 <View>
@@ -131,7 +161,7 @@ export default function recommendedScreen() {
                   <Text className='text-base text-gray-500 font-montserrat-medium' style={{ lineHeight: 16 }}>
                     {agent.type}
                   </Text>
-                  <Text style={{ lineHeight: 15 }} className='text-gray-400 font-montserrat'>Assigné depuis le {formatDate(agent?.recommended_at as string)}</Text>
+                  <Text style={{ lineHeight: 15 }} className='text-gray-400 font-montserrat'>Depuis le {formatDate(agent?.recommended_at as string)}</Text>
                 </View>
               </View>
             </Pressable>

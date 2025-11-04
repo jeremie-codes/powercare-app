@@ -18,7 +18,7 @@ export default function AideScreen() {
     router.back();
   };
 
-  if (user) {
+  if (!user) {
     return (
       <View className="items-center justify-center flex-1 bg-slate-50">
         <Text className="text-lg font-montserrat-medium text-center text-[#0B2A36]">
@@ -37,8 +37,7 @@ export default function AideScreen() {
     // Ici tu peux envoyer la requête à ton API :
     
     const data: Rapport = {
-      user_id: '1',
-      // user_id: user.id,
+      user_id: user.id,
       type,
       description: message,
     } 

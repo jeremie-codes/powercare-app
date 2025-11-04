@@ -1,42 +1,70 @@
 import React from 'react';
 import { View, Text, Image, TextInput, FlatList, TouchableOpacity, Pressable, ScrollView } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { ServicesApi } from '../../../services/api';
-import type { Agent, Service, Reservation, Message } from '../../../types';
-import { User, Search, Star, BadgeCheck, Check } from 'lucide-react-native';
+import { router } from 'expo-router';
+import { baseUrl, ChatApi, TaskApi } from '../../services/api';
+import type { Agent, Message } from '../../types';
+import { Search, Check, Plus, User } from 'lucide-react-native';
 import Header from 'components/Header';
 import { useAuth } from 'contexts/AuthContext';
-import { ActivityIndicator } from 'react-native-paper';
+import { ActivityIndicator, Dialog } from 'react-native-paper';
 import moment from 'moment';
+import { useNotification } from 'contexts/NotificationContext';
+import { formatDate } from 'utils/formatters';
 
 export default function messageScreen() {
   const { user, profile } = useAuth();
   const [messages, setMessages] = React.useState<Message[]>([]);
+  const [agents, setAgent] = React.useState<Agent[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [isDialogVisible, setIsDialogVisible] = React.useState(false);
   const [search, setSearch] = React.useState('');
   const [filteredMessages, setFilteredMessages] = React.useState<Message[]>([]);
   const [statutSelected, setStatutSelected] = React.useState<'Tous' | 'Lu' | 'Non lu' | string>('Tous');
-
+  const { showNotification } = useNotification();
+  
   React.useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-
-        let list: Message[] = [];
-
-        // A effacer lors de l'implémentation de l'API
-        list = await ServicesApi.getMessagesByUserId('u_client_pers_1');
-        setFilteredMessages(list);
         
-        // ✅ Vérifie le rôle du profil connecté
         if (user) {
-          list = await ServicesApi.getMessagesByUserId(user?.id);
-          setFilteredMessages(messages);
+          const { success, message, agents } = await TaskApi.getAgentRecommendedByClient(user?.id);
+            
+          if (!success) {
+            showNotification(message, 'error');
+          }
+            
+          setAgent(agents ?? []);
         }
 
-        setMessages(list);
-      } catch (e) {
-        console.error('Erreur lors du chargement des messages :', e);
+      } catch (e: any) {
+        console.error(e.details.message ?? 'Erreur lors du chargement des agents :', e);
+        showNotification(e.details.message ?? 'Erreur lors du chargement des agents :', 'error');
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [user]);
+  
+  React.useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        
+        if (user) {
+          const { success, message, inbox} = await ChatApi.getInoxByUserId(user?.id);
+          
+          if (!success) {
+            showNotification(message, 'error');
+          }
+          
+          setFilteredMessages(inbox ?? []);
+          setMessages(inbox ?? []);
+        }
+
+      } catch (e: any) {
+        console.error(e.details.message ?? 'Erreur lors du chargement des messages :', e);
+        showNotification(e.details.message ?? 'Erreur lors du chargement des messages :', 'error');
       } finally {
         setLoading(false);
       }
@@ -80,7 +108,7 @@ export default function messageScreen() {
   };
 
   // Si l'utilisateur n'est pas connecté à arranger pour la production !user
-  if (user) {
+  if (!user) {
     return (
       <View className='flex-1 px-5 bg-slate-50'>
         <Header />
@@ -94,6 +122,8 @@ export default function messageScreen() {
       </View>
     )
   };
+
+  const hideDialog = () => setIsDialogVisible(false);
 
   return (
     <View className='flex-1 bg-slate-50'>
@@ -183,6 +213,57 @@ export default function messageScreen() {
         ))}
         
       </ScrollView>
+
+      <Pressable onPress={() => setIsDialogVisible(true)} className='absolute items-center justify-center w-16 h-16 rounded-full bottom-8 right-4 bg-primary'>
+        <Plus size={24} color="#fff" />
+      </Pressable>
+
+      <Dialog visible={isDialogVisible} onDismiss={hideDialog}>
+        <Dialog.Content>
+          <Dialog.Title>
+            <Text className='font-montserrat-bold' style={{ fontSize: 14, color: '#143A52', marginBottom: 8 }}>
+              Agents assignés
+            </Text>
+          </Dialog.Title>
+          <Dialog.Content>
+            <View>
+              
+              {loading ? (
+                <ActivityIndicator size={'large'} color={'#0fade8'} />
+              ) : (agents.length > 0 ? (
+                agents.map((agent) => (
+                  <Pressable key={agent.id} onPress={() => handleMessagePress(agent.id)} className='relative px-0 py-3 mb-2 border-b bg-gray rounded-3xl border-b-gray-200'>            
+                    <View className='flex-row items-center'>
+                      <View className='flex-row items-center justify-center w-12 h-12 mr-4 overflow-hidden rounded-full bg-sky-50'>
+                        {agent?.user?.avatar ? <Image source={{ uri: baseUrl + agent?.user?.avatar }} className='w-full h-full rounded-full' />: <User size={44} color="#bae6fd" />}
+                      </View>
+                      
+                      <View>
+                        <Text className='text-base font-montserrat-semibold' style={{ color: '#143A52', lineHeight: 15 }}>
+                          {agent.user?.name}
+                        </Text>
+                        <Text className='text-base text-gray-500 font-montserrat-medium' style={{ lineHeight: 16 }}>
+                          {agent.type}
+                        </Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                ))
+              ) : (
+                <Text className='mt-40 text-base text-center text-gray-400 font-montserrat-medium'>
+                  Aucun agent trouvée !.
+                </Text>
+              ))}
+            </View>
+          </Dialog.Content>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Pressable onPress={hideDialog} >
+            <Text className='text-lg font-montserrat-medium'>Annuler</Text>
+          </Pressable>
+        </Dialog.Actions>
+      </Dialog>
+        
     </View>
   );
 }

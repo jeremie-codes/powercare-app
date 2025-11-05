@@ -15,7 +15,7 @@ export default function ReservationScreen() {
   const [reservations, setReservations] = React.useState<Reservation[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [filteredReservation, setFilteredReservation] = React.useState<Reservation[]>([]);
-  const [statutSelected, setStatutSelected] = React.useState<'Toutes' | 'En attente' | 'Confirmée' | 'Annulée' | string>('Toutes');
+  const [statutSelected, setStatutSelected] = React.useState<'Toutes' | 'En attente' | 'Confirmée' | 'Annulée' | 'Terminée' | string>('Toutes');
   const { showNotification } = useNotification();
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -94,7 +94,7 @@ export default function ReservationScreen() {
 
         {/* Filtre par statut */}
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} className='flex-row mt-2 mb-4'>
-          {['Toutes', 'En attente', 'Confirmée', 'Annulée'].map((statut, index) => (
+          {['Toutes', 'En attente', 'Confirmée', 'Annulée', 'Terminée'].map((statut, index) => (
             <Pressable key={index} onPress={() => handleSearch(statut)} className={`px-4 py-3 mr-2 rounded-full ${statut === statutSelected ? 'bg-primary' : 'bg-white border border-gray-100'}`}> 
               <Text className={`font-montserrat-semibold ${statut === statutSelected ? 'text-white' : 'text-gray-500'}`}>
                 {statut}
@@ -113,7 +113,7 @@ export default function ReservationScreen() {
         ) : (filteredReservation.length > 0 ? (
           filteredReservation.map((reservation) => (
             <Pressable key={reservation.id} onPress={() => handleReservationPress(reservation.id)} className='relative flex-row mb-3 overflow-hidden bg-white rounded-xl'>
-              <View className={`w-2 h-full mr-4 ${reservation?.statut === 'confirmée' ? 'bg-green-400' : (reservation?.statut === 'annulée' ? 'bg-red-400' : 'bg-yellow-400')}`}/>
+              <View className={`w-2 h-full mr-4 ${reservation?.statut === 'confirmée' || reservation?.statut === 'terminée' ? 'bg-green-400' : (reservation?.statut === 'annulée' ? 'bg-red-400' : 'bg-yellow-400')}`}/>
               
               <View className='flex-1 px-4 py-4'>
                 <View className='absolute items-end self-end w-full right-2 top-2'>

@@ -77,7 +77,6 @@ export interface Service {
   nom: string;
   image: string;
   description: string;
-  type_agent: AgentType;
   prix_base: number;
   is_actif: boolean;
   taches?: Tache[];

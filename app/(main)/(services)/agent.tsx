@@ -50,7 +50,7 @@ export default function AgentDetailScreen() {
   };
 
   const handleSubmit = async () => {
-    if (serviceParsed?.type_agent == "menager" && tailleLogement == '') return
+    if (serviceParsed?.nom.includes('ménage') && tailleLogement == '' || serviceParsed?.nom.includes('clean') && tailleLogement == '') return
     if (phone == "" || selectedDate == '' || adresse == '') {
       showNotification('Tout les champs sont récquis', 'error')
       return
@@ -395,9 +395,9 @@ export default function AgentDetailScreen() {
             {step == 2 && <View className='flex-1'>
               
               {/* Nombre de personnes */}
-              {serviceParsed?.type_agent == 'babysitter' && <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Nombre d'enfant à garder</Text>}
+              {serviceParsed?.nom.includes('bab') || serviceParsed?.nom.includes('noun') && <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Nombre d'enfant à garder</Text>}
             
-              {serviceParsed?.type_agent == 'babysitter' && <View className='flex-row items-center justify-between gap-4 px-4 py-2 mb-4 bg-white border border-gray-300 rounded-xl'>
+              {serviceParsed?.nom.includes('bab') || serviceParsed?.nom.includes('noun') && <View className='flex-row items-center justify-between gap-4 px-4 py-2 mb-4 bg-white border border-gray-300 rounded-xl'>
                 <Pressable onPress={() => setPerson(person == 1 ? 1 : person - 1)}>
                   <Minus size={24} color="#999" />
                 </Pressable>
@@ -419,9 +419,9 @@ export default function AgentDetailScreen() {
               </View>}
               
               {/* Taille de logement */}
-              {serviceParsed?.type_agent == 'menager' && <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Taille de logement</Text>}
+              {serviceParsed?.nom.includes('ménage') || serviceParsed?.nom.includes('clean') && <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Taille de logement</Text>}
             
-              {serviceParsed?.type_agent == 'menager' && <TextInput
+              {serviceParsed?.nom.includes('ménage') || serviceParsed?.nom.includes('clean') && <TextInput
                 className="px-8 py-5 mb-4 text-base text-gray-500 bg-white border border-gray-300 rounded-xl font-montserrat"
                 placeholder='Ex: 10m2, 2 chambres, etc'
                 value={tailleLogement}

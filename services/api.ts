@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { sendMessageMock, getMessagesByUserId, getConversationMock, messages} from './datas';
 import type { Agent, Service, FormReservation, Reservation, AuthResponse, Message, TacheAgent, UserUpdate, Rapport, UserCreate } from '../types';
 
 /**
@@ -22,10 +21,6 @@ function getBaseUrl(): string {
     console.warn('[API] Aucune URL de base configurée. Définissez EXPO_PUBLIC_API_URL ou expo.extra.apiUrl');
   }
   return base;
-}
-
-function isMockMode(): boolean {
-  return !getBaseUrl();
 }
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -123,9 +118,6 @@ export const AuthApi = {
     return Api.post<{ success: boolean; message: string; data: AuthResponse}>(`/account/update`, data, { 'Content-Type': 'application/json' });
   },
   async updatePassword(data: { oldPassword: string; newpassword: string }): Promise<boolean> {
-    if (isMockMode()) {
-      return true;
-    }
     return Api.post<boolean>(`/account/newpassword`, data, { 'Content-Type': 'application/json' });
   },
   async updateImage(data: FormData): Promise<{ success: boolean; message: string; data: AuthResponse}> {
@@ -139,7 +131,7 @@ export const AuthApi = {
   }
 };
 
-// Services API (liste et détail). En mode mock, on lit depuis services/datas
+// Services API (liste et détail)
 export const ServicesApi = {
   async list(): Promise<Service[]> {
     return Api.get<Service[]>(`/services`);

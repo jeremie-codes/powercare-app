@@ -5,7 +5,7 @@ import Header from 'components/Header';
 import { useAuth } from 'contexts/AuthContext';
 import { Camera, User } from 'lucide-react-native';
 import { useNotification } from 'contexts/NotificationContext';
-import { baseUrl } from 'services/api';
+import { AuthApi, baseUrl } from 'services/api';
 import { UserUpdate } from 'types';
 import * as ImagePicker from 'expo-image-picker';
 import { Dialog } from 'react-native-paper';

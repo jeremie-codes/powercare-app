@@ -15,7 +15,7 @@ export interface UserUpdate {
   name: string;
   email: string;
   phone: string;
-  type: "babysitter" | "menager" | "particulier" | "entreprise";
+  type: "babysitter" | "menager" | "particulier" | "entreprise" | null;
   adresse?: string;
   entreprise_nom?: string;
 }

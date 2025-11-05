@@ -16,7 +16,17 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState(user?.email || '')
   const [phone, setPhone] = useState(user?.phone || '')
   const [adresse, setAdresse] = useState(user?.adresse || '')
-  const [type, setType] = useState(profile?.type || 'particulier')
+
+  // Safely derive initial type from profile using a type guard because not all profile variants have 'type'
+  const initialType = (() => {
+    if (!profile) return null
+    if ('type' in profile && (profile.type === 'particulier' || profile.type === 'entreprise')) {
+      return profile.type
+    }
+    return null
+  })()
+
+  const [type, setType] = useState<'particulier' | 'entreprise' | null>(initialType)
   const [entreprise_nom, setEntrepriseNom] = useState('')
   const [password, setPassword] = useState('')
   const [newpassword, setNewPassword] = useState('')
@@ -27,7 +37,7 @@ export default function ProfileScreen() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [visible, setVisible] = useState(false);
 
-  const isClient = user !== null && profile?.type === 'particulier' || user !== null && profile?.type === 'entreprise';
+  const isClient = user !== null && initialType !== null;
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

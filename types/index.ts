@@ -4,7 +4,6 @@
 export type UserRole = 'agent' | 'client';
 
 // Types d'agents et de clients
-export type AgentType = 'babysitter' | 'menager';
 export type ClientType = 'particulier' | 'entreprise';
 
 // Disponibilité et statut des agents
@@ -42,12 +41,18 @@ export interface User {
   is_active: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+}
+
 // Agent (table: agent)
 export interface Agent {
   id: string;
   user_id: string;
   user?: User;
-  type: AgentType;
+  category_id: string;
+  category?: Category;
   experience: number; // en années
   disponibilite: Disponibilite;
   statut: StatutAgent;

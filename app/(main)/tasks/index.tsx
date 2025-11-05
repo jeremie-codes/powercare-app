@@ -159,7 +159,7 @@ export default function recommendedScreen() {
                     {agent.user?.name}
                   </Text>
                   <Text className='text-base text-gray-500 font-montserrat-medium' style={{ lineHeight: 16 }}>
-                    {agent.type}
+                    {agent.category?.name}
                   </Text>
                   <Text style={{ lineHeight: 15 }} className='text-gray-400 font-montserrat'>Depuis le {formatDate(agent?.recommended_at as string)}</Text>
                 </View>

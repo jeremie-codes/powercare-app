@@ -243,7 +243,7 @@ export default function messageScreen() {
                           {agent.user?.name}
                         </Text>
                         <Text className='text-base text-gray-500 font-montserrat-medium' style={{ lineHeight: 16 }}>
-                          {agent.type}
+                          {agent.category?.name}
                         </Text>
                       </View>
                     </View>

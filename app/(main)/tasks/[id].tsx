@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle, Plus, Star, Trash2, X } from "lucide-react-nati
 import { useAuth } from "../../../contexts/AuthContext";
 import { router, useLocalSearchParams } from "expo-router";
 import { TaskApi } from "services/api";
-import { AnyProfile, Client, TacheAgent } from "types";
+import { TacheAgent } from "types";
 import { formatDate, formatTime } from "utils/formatters";
 import { useNotification } from "contexts/NotificationContext";
 import { ActivityIndicator } from "react-native-paper";

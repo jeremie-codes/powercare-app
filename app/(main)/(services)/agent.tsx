@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, KeyboardAvoidingView, Pressable, ScrollView, TextInput, Switch, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { baseUrl, ServicesApi } from '../../../services/api';
-import { User, ArrowLeft, Star, BadgeCheck, Check, X, Calendar, Minus, Plus } from 'lucide-react-native';
+import { ArrowLeft, Star, BadgeCheck, Check, X, Calendar, Minus, Plus, ImageOff } from 'lucide-react-native';
 import { Agent, Service, Tache } from 'types';
 import { useAuth } from 'contexts/AuthContext';
 import { useNotification } from 'contexts/NotificationContext';
@@ -180,15 +180,18 @@ export default function AgentDetailScreen() {
                 <ArrowLeft color="#143A52" size={24} />
               </Pressable>
               
-              <Image
-                source={agent?.user?.avatar ? { uri: baseUrl + agent.user.avatar } : require('../../../assets/items/baby.jpg')}
+              {agent?.user?.avatar && <Image
+                source={{ uri: baseUrl + agent.user.avatar }}
                 className="absolute object-contain w-full h-full -bottom-0"
-              />
+              />}
+              {!agent?.user?.avatar && <View className='items-center justify-center flex-1'>
+                <ImageOff color="#143A52" size={43} style={{ alignSelf: 'center' }}/>
+              </View>}
               
               <View className="absolute flex-col items-center justify-center py-2 mx-4 rounded-full bottom-8 bg-white/80" style={{ minWidth: 170 }}>
                 <Text className="text-lg font-montserrat-bold text-[#143A52]">{agent?.user?.name}</Text>
                 <View className='flex-row items-center justify-center'>
-                  <Text className="font-montserrat-medium text-[#143A52]">{agent.type}</Text>
+                  <Text className="font-montserrat-medium text-[#143A52]">{agent?.category?.name}</Text>
                   {agent.is_badges && (<BadgeCheck size={24} color="white" fill={'#38bdf8'} />)}
                 </View>
               </View>
@@ -382,7 +385,7 @@ export default function AgentDetailScreen() {
                 placeholder='Ex: 12, Avenue, kinshasa'
                 value={adresse}
                 onChangeText={setAdresse}
-              />
+              /> 
 
             </View>}
 
@@ -395,9 +398,9 @@ export default function AgentDetailScreen() {
             {step == 2 && <View className='flex-1'>
               
               {/* Nombre de personnes */}
-              {serviceParsed?.nom.includes('bab') || serviceParsed?.nom.includes('noun') && <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Nombre d'enfant à garder</Text>}
+              {serviceParsed?.nom.includes('bab') || serviceParsed?.nom.includes('noun') ? <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Nombre d'enfant à garder</Text>: null}
             
-              {serviceParsed?.nom.includes('bab') || serviceParsed?.nom.includes('noun') && <View className='flex-row items-center justify-between gap-4 px-4 py-2 mb-4 bg-white border border-gray-300 rounded-xl'>
+              {serviceParsed?.nom.includes('bab') || serviceParsed?.nom.includes('noun') ? <View className='flex-row items-center justify-between gap-4 px-4 py-2 mb-4 bg-white border border-gray-300 rounded-xl'>
                 <Pressable onPress={() => setPerson(person == 1 ? 1 : person - 1)}>
                   <Minus size={24} color="#999" />
                 </Pressable>
@@ -416,18 +419,18 @@ export default function AgentDetailScreen() {
                 <Pressable onPress={() => setPerson(person + 1)}>
                   <Plus size={24} color="#999" />
                 </Pressable>
-              </View>}
+              </View>: null}
               
               {/* Taille de logement */}
-              {serviceParsed?.nom.includes('ménage') || serviceParsed?.nom.includes('clean') && <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Taille de logement</Text>}
+              {serviceParsed?.nom.includes('ménage') || serviceParsed?.nom.includes('clean') ? <Text className="font-montserrat-semibold text-lg text-[#143A52] mb-2 ml-2">Taille de logement</Text>: null}
             
-              {serviceParsed?.nom.includes('ménage') || serviceParsed?.nom.includes('clean') && <TextInput
+              {serviceParsed?.nom.includes('ménage') || serviceParsed?.nom.includes('clean') ? <TextInput
                 className="px-8 py-5 mb-4 text-base text-gray-500 bg-white border border-gray-300 rounded-xl font-montserrat"
                 placeholder='Ex: 10m2, 2 chambres, etc'
                 value={tailleLogement}
                 onChangeText={setTailleLogement}
                 keyboardType='numeric'
-              />}
+              />: null}
 
               {/* Phone */}
               <Text className="font-montserrat-semibold text-base text-[#143A52] flex-1 ml-2 mb-2">Numéro de contact</Text>

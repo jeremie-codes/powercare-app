@@ -16,7 +16,7 @@ export default function Step1() {
               <Text className="text-lg text-center text-white font-montserrat-bold">1</Text>
             </View>
             <View className="z-0 w-6 h-3 bg-white border -left-1 border-primary" />
-            <Pressable onPress={() => router.push('/(onboarding)/second')} className="z-10 items-center justify-center w-10 h-10 bg-white border rounded-full -left-2 border-primary" >
+            <Pressable onPress={() => router.navigate('/(onboarding)/second')} className="z-10 items-center justify-center w-10 h-10 bg-white border rounded-full -left-2 border-primary" >
               <Text className="text-lg text-center font-montserrat-bold text-primary">2</Text>
             </Pressable>
           </View>
@@ -27,7 +27,7 @@ export default function Step1() {
           </View>
           
           <View className="items-end w-full pb-8">
-            <Pressable onPress={() => router.push('/(onboarding)/second')} className="flex-row items-center justify-center w-56 py-4 bg-primary rounded-3xl">
+            <Pressable onPress={() => router.navigate('/(onboarding)/second')} className="flex-row items-center justify-center w-56 py-4 bg-primary rounded-3xl">
               <Text className="mr-2 text-xl text-white font-montserrat-bold">Continuer</Text>
               <ChevronRight className="pl-2" color="#fff" size={24} />
             </Pressable>

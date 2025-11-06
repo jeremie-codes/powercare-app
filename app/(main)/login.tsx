@@ -69,13 +69,13 @@
                   />  
                 </View>
 
-                <View className='flex-row justify-end mt-8'>
+                {/* <View className='flex-row justify-end mt-8'>
                   <Pressable onPress={() => router.push('/auth/forgot-password')}>
                     <Text className='font-montserrat-medium text-sky-700'>Mot de passe oublie</Text> 
                   </Pressable>
-                </View>
+                </View> */}
 
-                <Pressable onPress={handleLogin} className={`px-4 py-5 mt-8 rounded-2xl ${loading? 'bg-sky-300': 'bg-sky-500'}`} disabled={loading}>
+                <Pressable onPress={handleLogin} className={`px-4 py-4 mt-16 rounded-2xl ${loading? 'bg-sky-300': 'bg-sky-500'}`} disabled={loading}>
                   {!loading && <Text className='text-center text-white font-montserrat-bold'>SE CONNECTER</Text>}
                   {loading && <ActivityIndicator size='small' color='white' />}
                 </Pressable>
@@ -83,11 +83,11 @@
             </View>
 
             <View className="flex-row items-center justify-between gap-2 py-2 mx-6 mt-16">
-              <Pressable  style={{ width: '50%' }} onPress={() => router.replace("/login")} className={`rounded-xl py-4 px-8 bg-white shadow`} >
+              <Pressable  style={{ width: '50%' }} onPress={() => router.navigate("/login")} className={`rounded-xl py-4 px-8 bg-white shadow`} >
                 <Text className={`font-montserrat-semibold text-center text-sky-500`}>SE CONNECTER</Text>
               </Pressable>
               
-              <Pressable style={{ width: '50%' }} onPress={() => router.replace("/register")} className={`rounded-xl py-4 px-8 bg-slate-200`} >
+              <Pressable style={{ width: '50%' }} onPress={() => router.navigate("/register")} className={`rounded-xl py-4 px-8 bg-slate-200`} >
                 <Text className={`font-montserrat-semibold text-center text-sky-900`}>S'INSCRIRE</Text>
               </Pressable>
             </View>

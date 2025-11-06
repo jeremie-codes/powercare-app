@@ -12,7 +12,7 @@ export default function Step2() {
       <View className="flex-1 px-6 pt-16">
         <View className="justify-end flex-1 mb-4">
           <View className="flex-row items-center justify-start gap-0 mb-4">
-            <Pressable onPress={() => router.push('/(onboarding)')} className="z-10 items-center justify-center w-10 h-10 border rounded-full border-primary bg-primary">
+            <Pressable onPress={() => router.navigate('/(onboarding)')} className="z-10 items-center justify-center w-10 h-10 border rounded-full border-primary bg-primary">
               <Text className="text-lg text-center text-white font-montserrat-bold">1</Text>
             </Pressable>
             <View className="z-0 w-6 h-3 border -left-1 bg-primary border-primary" />
@@ -27,7 +27,7 @@ export default function Step2() {
           </View>
           
           <View className="items-end w-full pb-8">
-            <Pressable onPress={() => router.replace('/(main)')} className="flex-row items-center justify-center w-56 py-4 bg-primary rounded-3xl">
+            <Pressable onPress={() => router.navigate('/(main)')} className="flex-row items-center justify-center w-56 py-4 bg-primary rounded-3xl">
               <Text className="mr-2 text-xl text-white font-montserrat-bold">Commencer</Text>
               <PlayCircle color="#fff" size={20} />
             </Pressable>

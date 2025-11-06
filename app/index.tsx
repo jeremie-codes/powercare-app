@@ -15,6 +15,6 @@ export default function Index() {
     );
   }
   
-  return <Redirect href="(onboarding)" />;
+  return <Redirect href="/(onboarding)" />;
   
 }

@@ -14,6 +14,18 @@
     "plugins": [
       "expo-router",
       [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/iconapp.png",
+          "dark": {
+            "image": "./assets/iconapp.png",
+            "backgroundColor": "#ffffff"
+          },
+          "imageWidth": 200
+        }
+      ],
+      [
         "expo-calendar",
         {
           "calendarPermission": "Cette application a besoin d'accéder à votre calendrier pour vous permettre de faire une réservation."

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "powercare",
+    "name": "Powercare",
     "slug": "powercare",
     "scheme": "powercare",
     "version": "1.0.0",
@@ -28,17 +28,17 @@
       ]
     ],
     "orientation": "portrait",
-    "icon": "./assets/icon-app.png",
+    "icon": "./assets/iconapp.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/icon-app.png",
+      "image": "./assets/iconapp.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
-     "ios": {
+    "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.powercare.app",
       "buildNumber": "3",
@@ -52,10 +52,21 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon-app.png",
+        "foregroundImage": "./assets/iconapp.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.powercare.app"
+      "package": "com.powercare.app",
+      "permissions": [
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a1b72445-eebb-461c-bd63-1edabed0df58"
+      }
     }
   }
 }

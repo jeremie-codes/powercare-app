@@ -1,6 +1,8 @@
 {
   "name": "powercare",
   "version": "1.0.0",
+  "main": "expo-router/entry",
+  "private": true,
   "scripts": {
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -44,7 +46,5 @@
     "prettier-plugin-tailwindcss": "^0.5.11",
     "tailwindcss": "^3.4.0",
     "typescript": "~5.8.3"
-  },
-  "main": "expo-router/entry",
-  "private": true
+  }
 }

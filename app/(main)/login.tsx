@@ -22,7 +22,7 @@
       try {
         const { success, message } = await signIn(email, password);
         if (success) {
-          router.push('/home');
+          router.push('/(main)');
         }
         showNotification(message, 'success')
       } catch (e: any) {

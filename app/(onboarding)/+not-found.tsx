@@ -4,10 +4,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
+      <Stack.Screen options={{ title: 'Oops Onboarding!' }} />
       <View style={styles.container}>
         <Text style={styles.text}>Cet ecran n'existe pas.</Text>
-        <Pressable onPress={() => router.back()} style={styles.link}>
+        <Pressable onPress={() => router.push('(onboarding)')} style={styles.link}>
           <Text>Go to home screen!</Text>
         </Pressable>
       </View>

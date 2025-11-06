@@ -8,11 +8,11 @@ export default function OnboardingLayout() {
   return (
     <MenuProvider>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="(services)" />
         {/* <Stack.Screen name="messages" /> */}
         <Stack.Screen name="reservation" />
-        <Stack.Screen name="tasks/index" />
-        <Stack.Screen name="home" />
+        <Stack.Screen name="tasks" />
         <Stack.Screen name="login" />
         <Stack.Screen name="profile" />
         <Stack.Screen name="register" />

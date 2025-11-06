@@ -251,7 +251,7 @@ export default function ProfileScreen() {
     try {
       const { success, message } = await signOut();
       if (success) {
-        router.push('/home')
+        router.push('/(main)')
       }
       showNotification(message, 'success')
     } catch (error: any) {
@@ -267,7 +267,7 @@ export default function ProfileScreen() {
     try {
       const { success, message } = await accountDelete();
       showNotification('Compte supprimé avec succès!', 'success')
-      router.push('/home')
+      router.push('/(main)')
     } catch (error: any) {
       showNotification(error.details.message ?? 'Une erreur est survenue', 'error')
     }

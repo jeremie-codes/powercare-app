@@ -25,7 +25,7 @@ export default function AideScreen() {
           Veuillez vous connecter
         </Text>
         
-        <Pressable onPress={() => router.push('/home')} className="flex-row items-center justify-center px-6 py-4 mt-4 bg-primary rounded-xl">
+        <Pressable onPress={() => router.push('/(main)')} className="flex-row items-center justify-center px-6 py-4 mt-4 bg-primary rounded-xl">
           <Text className="text-lg text-white font-montserrat-semibold">Retour</Text>
         </Pressable>
       </View>

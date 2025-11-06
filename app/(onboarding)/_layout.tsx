@@ -4,8 +4,9 @@ import React from 'react';
 export default function OnboardingLayout() {
   return (
     <Stack>
-      <Stack.Screen name="step1" options={{ headerShown: false }} />
-      <Stack.Screen name="step2" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="second" options={{ headerShown: false }} />
+      <Stack.Screen name="+not-found" />
     </Stack>
   );
 }

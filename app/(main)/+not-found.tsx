@@ -7,7 +7,7 @@ export default function NotFoundScreen() {
       <Stack.Screen options={{ title: 'Oops!' }} />
       <View style={styles.container}>
         <Text style={styles.text}>Cet ecran n'existe pas.</Text>
-        <Pressable onPress={() => router.back()} style={styles.link}>
+        <Pressable onPress={() => router.push('/(main)')} style={styles.link}>
           <Text>Go to home screen!</Text>
         </Pressable>
       </View>

@@ -55,7 +55,7 @@ export default function ProfileScreen() {
       const { success, message } = await register(data)
 
       if (success) {
-        router.push('/home');
+        router.push('/(main)');
       }
       
       showNotification(message ?? 'Utilisateur créé avec succès', 'success')

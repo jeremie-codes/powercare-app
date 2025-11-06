@@ -34,7 +34,7 @@ export default function Menu() {
 
   const handlePress = (route: string) => {
 
-    if (!user && route !== '/home' && route !== '/login' && route !== '/register') {
+    if (!user && route !== '/(main)' && route !== '/login' && route !== '/register') {
       showNotification('Vous devez être connecté pour accéder à cette page', 'warning');
       return;
     }
@@ -72,9 +72,9 @@ export default function Menu() {
           </Pressable>
         </View>
 
-        <Pressable onPress={() => handlePress('/home')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/home' ? 'bg-sky-50' : ''}`}>
-          <Home size={24} color={pathname === '/home' ? '#0ea5e9': '#0369a1'} />
-          <Text className={`text-lg font-montserrat-semibold ${pathname === '/home' ? 'text-sky-500' : 'text-sky-900'}`}>Accueil</Text>
+        <Pressable onPress={() => handlePress('/(main)')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/' ? 'bg-sky-50' : ''}`}>
+          <Home size={24} color={pathname === '/' ? '#0ea5e9': '#0369a1'} />
+          <Text className={`text-lg font-montserrat-semibold ${pathname === '/' ? 'text-sky-500' : 'text-sky-900'}`}>Accueil</Text>
         </Pressable>
         {user?.role === 'agent' &&<Pressable onPress={() => handlePress('/tasks/me')} className={`w-full flex-row items-center gap-2 justify-start py-4 border-b border-sky-50 pl-10 ${pathname === '/tasks/me' ? 'bg-sky-50' : ''}`}>
           <ListTodo size={24} color={pathname === '/tasks/me' ? '#0ea5e9': '#0369a1'} />

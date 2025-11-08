@@ -13,10 +13,10 @@ let authToken: string | null = null;
 export function setAuthToken(token: string | null) {
   authToken = token;
 }
-export const baseUrl = 'https://powercare.siterdc.com/';
+export const baseUrl = 'https://www.powercare-drc.com/';
 
 function getBaseUrl(): string {
-  const base = 'https://powercare.siterdc.com/api';
+  const base = 'https://www.powercare-drc.com/api';
   if (!base) {
     console.warn('[API] Aucune URL de base configurée. Définissez EXPO_PUBLIC_API_URL ou expo.extra.apiUrl');
   }

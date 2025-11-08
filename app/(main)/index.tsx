@@ -20,8 +20,9 @@ export default function HomeScreen() {
         setIsRefreshing(true);
         try {
           const list = await ServicesApi.list();
-          setServices(list); 
-          setFilteredServices(list);
+          
+          setServices(typeof(list) !== 'object' ? [] : list); 
+          setFilteredServices(typeof(list) !== 'object' ? [] : list);
         } catch (e) {
           console.log('Erreur lors du chargement des services', e);
           showNotification('Erreur de conneixion !','error')
@@ -35,8 +36,8 @@ export default function HomeScreen() {
       setIsLoading(true);
       try {
         const list = await ServicesApi.list();
-        setServices(list); 
-        setFilteredServices(list);
+        setServices(typeof(list) !== 'object' ? [] : list); 
+        setFilteredServices(typeof(list) !== 'object' ? [] : list);
       } catch (e) {
         console.log('Erreur lors du chargement des services', e);
       }

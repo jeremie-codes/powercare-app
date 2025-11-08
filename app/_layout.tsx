@@ -1,35 +1,37 @@
 import { Stack } from "expo-router";
-import React, { useCallback } from "react";
-import { useFonts } from "expo-font";
-import { AuthProvider } from "../contexts/AuthContext";
-import { NotificationProvider } from "../contexts/NotificationContext";
-import * as SplashScreen from "expo-splash-screen";
+import React, { useCallback, useEffect, useState } from 'react';
+import { useFrameworkReady } from '../hooks/useFrameworkReady';
+import { useFonts } from 'expo-font';
+import { AuthProvider } from '../contexts/AuthContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
+import { SplashScreen } from 'expo-router';
 import {
   Montserrat_400Regular,
   Montserrat_500Medium,
   Montserrat_600SemiBold,
   Montserrat_700Bold,
-} from "@expo-google-fonts/montserrat";
+} from '@expo-google-fonts/montserrat';
 import { ActivityIndicator, Image, StatusBar, View } from "react-native";
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+export default function Layout() {
+  useFrameworkReady();
+
   const [fontsLoaded, fontError] = useFonts({
-    "Montserrat-Regular": Montserrat_400Regular,
-    "Montserrat-Medium": Montserrat_500Medium,
-    "Montserrat-SemiBold": Montserrat_600SemiBold,
-    "Montserrat-Bold": Montserrat_700Bold,
+    'Montserrat-Regular': Montserrat_400Regular,
+    'Montserrat-Medium': Montserrat_500Medium,
+    'Montserrat-SemiBold': Montserrat_600SemiBold,
+    'Montserrat-Bold': Montserrat_700Bold,
   });
 
-  const onLayoutRootView = useCallback(async () => {
+  useEffect(() => {
     if (fontsLoaded || fontError) {
-      await SplashScreen.hideAsync();
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  // 🕒 Pendant le chargement des polices
   if (!fontsLoaded && !fontError) {
     return (
       <View className="items-center justify-center flex-1 bg-sky-50">
@@ -40,20 +42,16 @@ export default function RootLayout() {
   }
 
   return (
-    <View className="flex-1" onLayout={onLayoutRootView}>
-      <AuthProvider>
-        <NotificationProvider>
-          {/* ✅ Stack racine */}
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-            <Stack.Screen name="(main)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-          </Stack>
-
-          <StatusBar hidden={true} backgroundColor="transparent" barStyle="dark-content" />
-        </NotificationProvider>
-      </AuthProvider>
-    </View>
+    <AuthProvider>
+      <NotificationProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(onboarding)" />
+          <Stack.Screen name="(main)" />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar hidden={true} backgroundColor="transparent" barStyle="dark-content" />
+      </NotificationProvider>
+    </AuthProvider>
   );
 }
